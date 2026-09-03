@@ -81,6 +81,8 @@ html {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   overflow-x: hidden;
   width: 100%;
 }
@@ -331,6 +333,22 @@ p {
   background-color: var(--accent-hover);
   border-color: var(--accent-hover);
   box-shadow: 0 6px 16px rgba(255, 85, 0, 0.35);
+}
+
+.btn:disabled,
+.btn.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn-primary.is-disabled,
+.btn-primary:disabled {
+  background-color: #2e2e2e !important;
+  border-color: #444444 !important;
+  color: #999999 !important;
 }
 
 .btn-secondary {
@@ -1082,24 +1100,27 @@ p {
 
 .search-icon {
   position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   left: 10px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-dim);
   pointer-events: none;
   z-index: 2;
 }
 
 .search-input {
-  padding-left: 32px !important;
-  padding-right: 30px !important;
+  padding-left: 34px !important;
+  padding-right: 32px !important;
   width: 100%;
-  font-size: 13px !important;
-  min-height: 40px !important;
+  font-size: 16px !important;
+  min-height: 44px !important;
   background-color: var(--surface-light);
   border: 1px solid #333333;
   border-radius: var(--radius-sm);
   color: var(--text);
   transition: border-color 0.15s ease, background-color 0.15s ease;
+  touch-action: manipulation;
 }
 
 .search-input:focus {
@@ -1110,17 +1131,20 @@ p {
 
 .search-clear-btn {
   position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   right: 8px;
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 6px 8px;
   line-height: 1;
   border-radius: 3px;
   transition: color 0.15s ease, background-color 0.15s ease;
   z-index: 2;
+  touch-action: manipulation;
 }
 
 .search-clear-btn:hover {
@@ -2629,6 +2653,8 @@ p {
   .app-handoff-card {
     flex-direction: column;
     text-align: center;
+    align-items: center;
+    padding: 20px 16px;
   }
 }
 
@@ -2660,11 +2686,42 @@ p {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 8px;
+  align-items: center;
 }
 
 .btn-playstore {
+  display: inline-flex;
+  align-items: center;
   gap: 10px;
+}
+
+@media (max-width: 700px) {
+  .handoff-content {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .handoff-actions {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .handoff-actions .btn,
+  .handoff-actions #btn-open-in-planer,
+  .handoff-actions .btn-playstore {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* Wegpunkt-Liste auf der Route-Detailseite */
@@ -2723,4 +2780,26 @@ p {
   font-family: monospace;
   color: var(--text-dim);
 }
+
+/* ==========================================================================
+   Verhinderung des automatischen Heranzoomens auf Handys und Tablets bei Fokus
+   (iOS Safari & Android-Browser zoomen automatisch heran, wenn font-size < 16px ist)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="url"],
+  input[type="number"],
+  select,
+  textarea,
+  .search-input,
+  .text-input,
+  .select-input,
+  .segment-mode-select,
+  .share-input {
+    font-size: 16px !important;
+    touch-action: manipulation;
+  }
+}
+
 

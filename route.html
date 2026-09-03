@@ -52,7 +52,7 @@
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
 
   <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
-  <link rel="stylesheet" href="css/style.css?v=1.10">
+  <link rel="stylesheet" href="css/style.css?v=1.13">
 </head>
 <body class="page-route-view">
 
@@ -144,11 +144,11 @@
               Diese geplante Route kann direkt in deiner <strong>MotoAlex Navigations-App</strong> auf dem Android-Smartphone geladen und <strong>100% offline</strong> mit Kurvenansicht und Sprachhinweisen abgefahren werden.
             </p>
             <div class="handoff-actions">
-              <!-- Platzhalter für Google Play Store Link -->
-              <a href="https://play.google.com/store/apps/details?id=de.motoalex.navigation" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-playstore" id="playstore-link">
+              <!-- Deaktivierter Button: App noch nicht im Google Play Store -->
+              <button type="button" class="btn btn-primary btn-playstore is-disabled" id="playstore-link" disabled aria-disabled="true" title="MotoAlex wird bald im Google Play Store verfügbar sein">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;"><path d="M3.609 1.814L13.792 12 3.61 22.186a2.41 2.41 0 0 1-.61-.954V2.768c0-.348.217-.68.61-.954zm11.246 11.246l2.124 2.124-11.5 6.64 9.376-8.764zm0-2.12L5.48 2.176l11.5 6.64-2.125 2.124zm1.488 1.488l3.418 1.974c.837.483.837 1.267 0 1.75l-3.418 1.974-1.89-1.85 1.89-1.848z"/></svg>
-                <span>MotoAlex im Google Play Store (Platzhalter)</span>
-              </a>
+                <span>MotoAlex, bald im Google Play Store</span>
+              </button>
               <a href="#" class="btn btn-secondary" id="btn-open-in-planer">
                 Im Web-Planer bearbeiten
               </a>
