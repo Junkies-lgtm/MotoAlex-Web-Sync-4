@@ -1397,6 +1397,16 @@ p {
   font-size: 12px;
 }
 
+.segment-connector.is-drop-target {
+  background-color: rgba(255, 85, 0, 0.12);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease;
+}
+
+.segment-connector.is-drop-target .segment-connector-content {
+  border-color: var(--accent);
+}
+
 .waypoint-item {
   display: flex;
   align-items: center;
@@ -1408,6 +1418,9 @@ p {
   gap: 8px;
   font-size: 13px;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  position: relative;
   transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
@@ -1417,26 +1430,93 @@ p {
 
 .waypoint-item.is-dragging {
   opacity: 0.35;
-  border: 1px dashed var(--accent);
-  background-color: rgba(217, 72, 0, 0.1);
+  border: 1px dashed var(--accent) !important;
+  background-color: rgba(217, 72, 0, 0.12) !important;
 }
 
+/* Neuer großzügiger Drag-Bereich für Touch & Maus (über Handle, Badge, Text und Koordinaten) */
+.waypoint-drag-zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  padding: 4px 2px;
+  touch-action: pan-y;
+  -webkit-user-drag: element;
+  border-radius: 4px;
+}
+
+.waypoint-drag-zone:active {
+  cursor: grabbing;
+}
+
+.waypoint-drag-zone * {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.waypoint-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: 36px;
+  white-space: nowrap;
+}
+
+/* Auffällige, breite und leuchtende Einfügelinie (oben) */
 .waypoint-item.drag-over-top {
-  border-top: 2px solid var(--accent);
+  border-top-color: var(--accent) !important;
+  background-color: rgba(255, 85, 0, 0.12) !important;
 }
 
+.waypoint-item.drag-over-top::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -2px;
+  right: -2px;
+  height: 6px;
+  background-color: var(--accent);
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(255, 85, 0, 0.9), 0 0 4px #ffffff;
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* Auffällige, breite und leuchtende Einfügelinie (unten) */
 .waypoint-item.drag-over-bottom {
-  border-bottom: 2px solid var(--accent);
+  border-bottom-color: var(--accent) !important;
+  background-color: rgba(255, 85, 0, 0.12) !important;
+}
+
+.waypoint-item.drag-over-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: -2px;
+  right: -2px;
+  height: 6px;
+  background-color: var(--accent);
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(255, 85, 0, 0.9), 0 0 4px #ffffff;
+  z-index: 30;
+  pointer-events: none;
 }
 
 .waypoint-drag-handle {
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 14px;
   cursor: grab;
   display: inline-flex;
   align-items: center;
-  opacity: 0.6;
-  padding: 2px;
+  opacity: 0.7;
+  padding: 2px 4px;
   flex-shrink: 0;
 }
 

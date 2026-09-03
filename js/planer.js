@@ -1063,8 +1063,92 @@ function setSegmentMode(segmentIndex, modeKey) {
 }
 
 /**
- * Rendert die Wegpunkteliste in der Seitenleiste mit Drag & Drop & Sortierknoepfen
- * und interaktiven Abschnitts-Profilwählern zwischen den Wegpunkten
+ * Berechnet großzügig den Einfügeslot (0 bis items.length) basierend auf der vertikalen Position (Maus oder Touch).
+ * Deckt den gesamten Bereich kontinuierlich ab (inklusive Konnektoren und Zwischenräume),
+ * sodass keine toten Zonen entstehen und die orange Linie stabil sichtbar bleibt.
+ */
+function calculateGenerousDropSlot(listElement, clientY) {
+  if (!listElement) return 0;
+  const items = Array.from(listElement.querySelectorAll('.waypoint-item'));
+  if (items.length === 0) return 0;
+
+  // Mittelpunkte aller Wegpunkte ermitteln
+  const mids = items.map(el => {
+    const r = el.getBoundingClientRect();
+    return r.top + r.height / 2;
+  });
+
+  // Oberhalb des ersten Wegpunkts: Slot 0 (ganz oben)
+  if (clientY < mids[0]) {
+    return 0;
+  }
+
+  // Unterhalb des letzten Wegpunkts: Slot = items.length (ganz unten)
+  if (clientY >= mids[mids.length - 1]) {
+    return items.length;
+  }
+
+  // Zwischen zwei Wegpunkten (deckt auch den Abschnitts-Wähler / Konnektor vollständig ab)
+  for (let k = 0; k < mids.length - 1; k++) {
+    if (clientY >= mids[k] && clientY < mids[k + 1]) {
+      return k + 1;
+    }
+  }
+
+  return items.length;
+}
+
+/**
+ * Wandelt den Einfügeslot (0 .. N) in den passenden Zielindex für moveWaypoint(fromIndex, toIndex) um.
+ */
+function slotToTargetIndex(slot, fromIndex, totalItems) {
+  if (fromIndex === null || fromIndex === undefined || totalItems <= 1) {
+    return slot;
+  }
+  if (slot <= fromIndex) {
+    return slot;
+  }
+  return Math.min(totalItems - 1, slot - 1);
+}
+
+/**
+ * Entfernt alle Drag-Over- und Drop-Klassen aus der Wegpunkt-Liste.
+ */
+function clearAllDropIndicators(listElement) {
+  if (!listElement) return;
+  listElement.querySelectorAll('.waypoint-item').forEach(item => {
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  listElement.querySelectorAll('.segment-connector').forEach(conn => {
+    conn.classList.remove('is-drop-target');
+  });
+}
+
+/**
+ * Aktualisiert die visuelle Anzeige der auffälligen orangefarbenen Einfügelinie.
+ */
+function updateDropIndicatorUI(listElement, slot, fromIndex) {
+  clearAllDropIndicators(listElement);
+  if (slot === null || slot === undefined || !listElement) return;
+
+  const items = Array.from(listElement.querySelectorAll('.waypoint-item'));
+  const connectors = Array.from(listElement.querySelectorAll('.segment-connector'));
+  if (items.length === 0) return;
+
+  if (slot === 0) {
+    if (items[0]) items[0].classList.add('drag-over-top');
+  } else if (slot >= items.length) {
+    if (items[items.length - 1]) items[items.length - 1].classList.add('drag-over-bottom');
+  } else {
+    // Einfügen zwischen item slot-1 und item slot
+    if (items[slot]) items[slot].classList.add('drag-over-top');
+    if (connectors[slot - 1]) connectors[slot - 1].classList.add('is-drop-target');
+  }
+}
+
+/**
+ * Rendert die Wegpunkteliste in der Seitenleiste mit großzügigem Touch-Drag & Drop,
+ * Sortierknöpfen und interaktiven Abschnitts-Profilwählern zwischen den Wegpunkten
  */
 function renderWaypointsList() {
   const list = domElements.waypointsList;
@@ -1091,6 +1175,31 @@ function renderWaypointsList() {
     domElements.btnShareRoute.disabled = total < 2;
   }
 
+  // Container-Level Dragover & Drop für unterbrechungsfreies Ziehen
+  if (!list._dragListenersAttached) {
+    list._dragListenersAttached = true;
+    list.addEventListener('dragover', (e) => {
+      if (draggedWaypointIndex === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const slot = calculateGenerousDropSlot(list, e.clientY);
+      updateDropIndicatorUI(list, slot, draggedWaypointIndex);
+    });
+
+    list.addEventListener('drop', (e) => {
+      if (draggedWaypointIndex === null) return;
+      e.preventDefault();
+      const slot = calculateGenerousDropSlot(list, e.clientY);
+      clearAllDropIndicators(list);
+      const fromIdx = draggedWaypointIndex;
+      const toIdx = slotToTargetIndex(slot, fromIdx, state.waypoints.length);
+      if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
+        moveWaypoint(fromIdx, toIdx);
+      }
+      draggedWaypointIndex = null;
+    });
+  }
+
   state.waypoints.forEach((wp, index) => {
     // 1. Wenn nicht erster Wegpunkt: Profil-Wähler für den Abschnitt davor einfügen
     if (index > 0) {
@@ -1114,6 +1223,28 @@ function renderWaypointsList() {
       const selectEl = connectorEl.querySelector('.segment-mode-select');
       selectEl.addEventListener('change', (e) => {
         setSegmentMode(segIndex, e.target.value);
+      });
+
+      // Lückenlose Drag-Zonen auch über Konnektoren hinweg
+      connectorEl.addEventListener('dragover', (e) => {
+        if (draggedWaypointIndex === null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const slot = calculateGenerousDropSlot(list, e.clientY);
+        updateDropIndicatorUI(list, slot, draggedWaypointIndex);
+      });
+
+      connectorEl.addEventListener('drop', (e) => {
+        if (draggedWaypointIndex === null) return;
+        e.preventDefault();
+        const slot = calculateGenerousDropSlot(list, e.clientY);
+        clearAllDropIndicators(list);
+        const fromIdx = draggedWaypointIndex;
+        const toIdx = slotToTargetIndex(slot, fromIdx, total);
+        if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
+          moveWaypoint(fromIdx, toIdx);
+        }
+        draggedWaypointIndex = null;
       });
 
       list.appendChild(connectorEl);
@@ -1143,13 +1274,16 @@ function renderWaypointsList() {
       badgeText = String(index);
     }
 
+    // Großzügiger Drag-Bereich (.waypoint-drag-zone): umfasst Handle, Badge, Text ("VIA", "Start", "Ziel") und Koordinaten
     li.innerHTML = `
-      <span class="waypoint-drag-handle" title="Wegpunkt per Drag & Drop verschieben">⠿</span>
-      <span class="waypoint-badge ${badgeClass}">${badgeText}</span>
-      <span style="font-weight: 600; font-size: 0.85rem; min-width: 36px;">${roleLabel}</span>
-      <span class="waypoint-coords" title="${wp.lat.toFixed(5)}, ${wp.lng.toFixed(5)}">
-        ${wp.lat.toFixed(4)}, ${wp.lng.toFixed(4)}
-      </span>
+      <div class="waypoint-drag-zone" title="Wegpunkt gedrückt halten zum Verschieben">
+        <span class="waypoint-drag-handle" aria-hidden="true">⠿</span>
+        <span class="waypoint-badge ${badgeClass}">${badgeText}</span>
+        <span class="waypoint-label">${roleLabel}</span>
+        <span class="waypoint-coords" title="${wp.lat.toFixed(5)}, ${wp.lng.toFixed(5)}">
+          ${wp.lat.toFixed(4)}, ${wp.lng.toFixed(4)}
+        </span>
+      </div>
       <div class="waypoint-reorder-actions">
         <button type="button" class="btn-move-wp btn-move-up" title="Nach oben verschieben" ${index === 0 ? 'disabled' : ''}>▲</button>
         <button type="button" class="btn-move-wp btn-move-down" title="Nach unten verschieben" ${index === total - 1 ? 'disabled' : ''}>▼</button>
@@ -1183,8 +1317,110 @@ function renderWaypointsList() {
       removeWaypoint(index);
     });
 
-    // Drag & Drop Events
+    // --- Touch Drag & Drop für mobile Geräte (Smartphones / Tablets) ---
+    const dragZone = li.querySelector('.waypoint-drag-zone');
+    let touchTimer = null;
+    let isTouchDraggingThis = false;
+    let touchStartPos = { x: 0, y: 0 };
+
+    if (dragZone) {
+      const onWindowTouchMove = (e) => {
+        if (!isTouchDraggingThis || !e.touches || e.touches.length === 0) return;
+        if (e.cancelable) e.preventDefault();
+        const slot = calculateGenerousDropSlot(list, e.touches[0].clientY);
+        updateDropIndicatorUI(list, slot, index);
+      };
+
+      const finishTouchDrag = (e) => {
+        window.removeEventListener('touchmove', onWindowTouchMove);
+        window.removeEventListener('touchend', finishTouchDrag);
+        window.removeEventListener('touchcancel', finishTouchDrag);
+
+        if (touchTimer) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+
+        if (isTouchDraggingThis) {
+          isTouchDraggingThis = false;
+          li.classList.remove('is-dragging');
+          document.body.style.userSelect = '';
+          document.body.style.webkitUserSelect = '';
+
+          let endY = touchStartPos.y;
+          if (e && e.changedTouches && e.changedTouches.length > 0) {
+            endY = e.changedTouches[0].clientY;
+          }
+          const finalSlot = calculateGenerousDropSlot(list, endY);
+          clearAllDropIndicators(list);
+
+          const toIndex = slotToTargetIndex(finalSlot, index, total);
+          if (toIndex !== null && toIndex !== index) {
+            moveWaypoint(index, toIndex);
+          }
+          draggedWaypointIndex = null;
+        }
+      };
+
+      dragZone.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        isTouchDraggingThis = false;
+
+        touchTimer = setTimeout(() => {
+          isTouchDraggingThis = true;
+          draggedWaypointIndex = index;
+          li.classList.add('is-dragging');
+          document.body.style.userSelect = 'none';
+          document.body.style.webkitUserSelect = 'none';
+
+          if (navigator.vibrate) {
+            try { navigator.vibrate(35); } catch (_) {}
+          }
+
+          const slot = calculateGenerousDropSlot(list, touchStartPos.y);
+          updateDropIndicatorUI(list, slot, index);
+
+          window.addEventListener('touchmove', onWindowTouchMove, { passive: false });
+          window.addEventListener('touchend', finishTouchDrag, { passive: true });
+          window.addEventListener('touchcancel', finishTouchDrag, { passive: true });
+        }, 180);
+      }, { passive: true });
+
+      dragZone.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 0) return;
+        if (touchTimer && !isTouchDraggingThis) {
+          const dx = Math.abs(e.touches[0].clientX - touchStartPos.x);
+          const dy = Math.abs(e.touches[0].clientY - touchStartPos.y);
+          if (dx > 10 || dy > 10) {
+            clearTimeout(touchTimer);
+            touchTimer = null;
+          }
+        }
+      }, { passive: true });
+
+      dragZone.addEventListener('touchend', () => {
+        if (touchTimer && !isTouchDraggingThis) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+      }, { passive: true });
+
+      dragZone.addEventListener('touchcancel', () => {
+        if (touchTimer && !isTouchDraggingThis) {
+          clearTimeout(touchTimer);
+          touchTimer = null;
+        }
+      }, { passive: true });
+    }
+
+    // --- HTML5 Drag & Drop Events (Maus / Desktop) ---
     li.addEventListener('dragstart', (e) => {
+      if (touchTimer) {
+        clearTimeout(touchTimer);
+        touchTimer = null;
+      }
+      isTouchDraggingThis = false;
       draggedWaypointIndex = index;
       li.classList.add('is-dragging');
       e.dataTransfer.effectAllowed = 'move';
@@ -1193,38 +1429,27 @@ function renderWaypointsList() {
 
     li.addEventListener('dragend', () => {
       li.classList.remove('is-dragging');
+      clearAllDropIndicators(list);
       draggedWaypointIndex = null;
-      document.querySelectorAll('.waypoint-item').forEach(item => {
-        item.classList.remove('drag-over-top', 'drag-over-bottom');
-      });
     });
 
     li.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
-      const rect = li.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      if (e.clientY < midY) {
-        li.classList.add('drag-over-top');
-        li.classList.remove('drag-over-bottom');
-      } else {
-        li.classList.add('drag-over-bottom');
-        li.classList.remove('drag-over-top');
-      }
-    });
-
-    li.addEventListener('dragleave', () => {
-      li.classList.remove('drag-over-top', 'drag-over-bottom');
+      const slot = calculateGenerousDropSlot(list, e.clientY);
+      updateDropIndicatorUI(list, slot, draggedWaypointIndex);
     });
 
     li.addEventListener('drop', (e) => {
       e.preventDefault();
-      li.classList.remove('drag-over-top', 'drag-over-bottom');
+      const slot = calculateGenerousDropSlot(list, e.clientY);
+      clearAllDropIndicators(list);
       const fromIdx = draggedWaypointIndex;
-      const toIdx = index;
-      if (fromIdx !== null && fromIdx !== toIdx) {
+      const toIdx = slotToTargetIndex(slot, fromIdx, total);
+      if (fromIdx !== null && toIdx !== null && fromIdx !== toIdx) {
         moveWaypoint(fromIdx, toIdx);
       }
+      draggedWaypointIndex = null;
     });
 
     list.appendChild(li);
@@ -1242,6 +1467,8 @@ function clearAllWaypointsAndRoute() {
   state.segmentModes = [];
   state.currentRouteGeoJSON = null;
   state.currentRouteProperties = null;
+
+  segmentCache.clear();
 
   renderWaypointsList();
   clearRouteLayer();
@@ -1430,6 +1657,31 @@ function buildBRouterUrl(waypoints, profileId, params = null) {
   return url;
 }
 
+/**
+ * Baut die BRouter-Anfrage-URL fuer ein Segment zwischen zwei Wegpunkten zusammen
+ */
+function getSegmentUrl(wpA, wpB, modeKey) {
+  const modeParams = MODE_PARAMETERS[modeKey] || MODE_PARAMETERS.kurvig;
+  return buildBRouterUrl([wpA, wpB], PROFILE_ID, modeParams);
+}
+
+// Zwischenspeicher fuer Segmente (Map auf Modulebene: Schluessel = vollstaendige BRouter-URL, Wert = geparste GeoJSON-Antwort)
+const MAX_SEGMENT_CACHE_SIZE = 100;
+const segmentCache = new Map();
+
+/**
+ * Speichert ein berechnetes Segment im Zwischenspeicher (max. 100 Eintraege, aeltester faellt raus)
+ */
+function saveToSegmentCache(url, data) {
+  if (segmentCache.has(url)) {
+    segmentCache.delete(url);
+  } else if (segmentCache.size >= MAX_SEGMENT_CACHE_SIZE) {
+    const oldestKey = segmentCache.keys().next().value;
+    segmentCache.delete(oldestKey);
+  }
+  segmentCache.set(url, data);
+}
+
 // ==========================================================================
 // 6a. LERNENDE RESTZEIT-SCHÄTZUNG & BERECHNUNGS-STATISTIK
 // ==========================================================================
@@ -1551,16 +1803,20 @@ function getLearnedFactorForMode(mode) {
       km = typeof item.km === 'number' ? item.km : (Array.isArray(item) ? item[0] : 0);
       s = typeof item.s === 'number' ? item.s : (Array.isArray(item) ? item[1] : 0);
     }
-    if (km > 0 && s > 0) {
-      const denom = Math.pow(km, 1.3);
-      if (denom > 0) {
-        const factor = (s - config.grundlast) / denom;
-        // Faktor immer positiv halten
-        impliedFactors.push(Math.max(0.001, factor));
-      }
+    // Messungen, bei denen die gemessene Zeit kleiner oder gleich der Grundlast ist,
+    // werden übersprungen und fließen nicht in den Median ein.
+    if (km <= 0 || s <= config.grundlast) {
+      continue;
+    }
+
+    const denom = Math.pow(km, 1.3);
+    if (denom > 0) {
+      const factor = (s - config.grundlast) / denom;
+      impliedFactors.push(factor);
     }
   }
 
+  // Bleibt danach keine Messung übrig, gilt der Standardfaktor des Modus
   if (impliedFactors.length === 0) {
     return config.defaultFaktor;
   }
@@ -1585,43 +1841,78 @@ function getGrundlastForMode(mode) {
 
 /**
  * Schätzung vor dem Start:
- * Summe der Luftlinien aller Segmente in km, dann Dauer = Grundlast + Faktor * km^1.3
+ * Schätzt nur noch die Segmente, die tatsächlich neu abgerufen werden (nicht im Zwischenspeicher).
+ * Setzt die Grundlast nur einmal je Berechnung an, nicht je Segment:
+ * Dauer = Grundlast + Summe über alle neu zu rechnenden Segmente aus Faktor * Segmentluftlinie^1.3.
+ * Liegen alle Segmente im Speicher, wird die Fortschrittsanzeige gar nicht erst gestartet.
  */
-function estimateRouteCalculationSeconds(waypoints, segmentModes, defaultMode = 'kurvig') {
-  if (!waypoints || waypoints.length < 2) return DEFAULT_GRUNDLAST;
-
-  const firstMode = segmentModes[0] || defaultMode;
-  const allSameMode = segmentModes.length === 0 || segmentModes.every(m => m === firstMode);
-
-  if (allSameMode) {
-    const totalAirKm = calculateTotalAirDistanceKm(waypoints);
-    const grundlast = getGrundlastForMode(firstMode);
-    const faktor = getLearnedFactorForMode(firstMode);
-    const duration = grundlast + faktor * Math.pow(totalAirKm, 1.3);
+function estimateRouteCalculationSeconds(waypoints, segmentModes, segmentUrls = null, defaultMode = 'kurvig') {
+  if (!waypoints || waypoints.length < 2) {
     return {
-      durationSeconds: Math.max(1.0, duration),
-      totalAirKm,
-      isAllSameMode: true,
-      mode: firstMode
-    };
-  } else {
-    let totalEst = 0;
-    let totalAirKm = 0;
-    for (let i = 0; i < waypoints.length - 1; i++) {
-      const segMode = segmentModes[i] || defaultMode;
-      const segKm = getHaversineDistanceKm(waypoints[i], waypoints[i + 1]);
-      totalAirKm += segKm;
-      const grundlast = getGrundlastForMode(segMode);
-      const faktor = getLearnedFactorForMode(segMode);
-      totalEst += (grundlast + faktor * Math.pow(segKm, 1.3));
-    }
-    return {
-      durationSeconds: Math.max(1.0, totalEst),
-      totalAirKm,
-      isAllSameMode: false,
-      mode: firstMode
+      durationSeconds: DEFAULT_GRUNDLAST,
+      totalAirKm: 0,
+      allCached: false,
+      uncachedCount: 0,
+      mode: defaultMode
     };
   }
+
+  // Segment-URLs ermitteln, falls nicht explizit übergeben
+  const urls = Array.isArray(segmentUrls) ? segmentUrls : [];
+  if (urls.length === 0) {
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const mode = (segmentModes && segmentModes[i]) || defaultMode;
+      urls.push(getSegmentUrl(waypoints[i], waypoints[i + 1], mode));
+    }
+  }
+
+  // Ermittle Segmente, die tatsächlich neu berechnet werden müssen
+  const uncachedIndices = [];
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const url = urls[i];
+    if (!url || !segmentCache.has(url)) {
+      uncachedIndices.push(i);
+    }
+  }
+
+  // Liegen alle Segmente im Speicher, wird die Fortschrittsanzeige gar nicht erst gestartet
+  if (uncachedIndices.length === 0) {
+    return {
+      durationSeconds: 0,
+      totalAirKm: 0,
+      allCached: true,
+      uncachedCount: 0,
+      mode: defaultMode
+    };
+  }
+
+  // Grundlast nur einmal je Berechnung ansetzen, nicht je Segment
+  const firstUncachedMode = (segmentModes && segmentModes[uncachedIndices[0]]) || defaultMode;
+  const grundlast = getGrundlastForMode(firstUncachedMode);
+
+  let summe = 0;
+  let totalUncachedAirKm = 0;
+
+  for (const idx of uncachedIndices) {
+    const wpA = waypoints[idx];
+    const wpB = waypoints[idx + 1];
+    const segMode = (segmentModes && segmentModes[idx]) || defaultMode;
+    const segKm = getHaversineDistanceKm(wpA, wpB);
+    const faktor = getLearnedFactorForMode(segMode);
+
+    totalUncachedAirKm += segKm;
+    summe += faktor * Math.pow(segKm, 1.3);
+  }
+
+  const duration = grundlast + summe;
+
+  return {
+    durationSeconds: Math.max(1.0, duration),
+    totalAirKm: totalUncachedAirKm,
+    allCached: false,
+    uncachedCount: uncachedIndices.length,
+    mode: firstUncachedMode
+  };
 }
 
 // ==========================================================================
@@ -1909,12 +2200,17 @@ function parseRoutingError(status, errorText = '', waypoints = [], segmentIndex 
 
 /**
  * Fuehrt die Berechnung eines einzelnen Segments (von Punkt A nach Punkt B) durch.
+ * Prüft vor jedem fetch, ob der Schlüssel im Zwischenspeicher vorliegt.
+ * Speichert nach jedem erfolgreichen Abruf.
  */
 async function fetchSegmentRoute(wpA, wpB, modeKey, signal = null, segmentIndex = 0, totalWaypoints = 2) {
-  const modeParams = MODE_PARAMETERS[modeKey] || MODE_PARAMETERS.kurvig;
-  const segmentPoints = [wpA, wpB];
+  const url = getSegmentUrl(wpA, wpB, modeKey);
 
-  const url = buildBRouterUrl(segmentPoints, PROFILE_ID, modeParams);
+  // Vor jedem fetch prüfen, ob der Schlüssel im Zwischenspeicher vorliegt
+  if (segmentCache.has(url)) {
+    return segmentCache.get(url);
+  }
+
   let response;
   try {
     response = await fetch(url, { signal });
@@ -1942,13 +2238,18 @@ async function fetchSegmentRoute(wpA, wpB, modeKey, signal = null, segmentIndex 
     err.userMessage = userMsg;
     throw err;
   }
+
+  // Speichere nach jedem erfolgreichen Abruf im Zwischenspeicher
+  saveToSegmentCache(url, data);
+
   return data;
 }
 
 /**
  * Fuehrt die Routenberechnung ueber den BRouter-Dienst durch.
- * Mit Nebenläufigkeitskontrolle (AbortController & fortlaufende ID),
- * Messung (performance.now), Schätzung und lernender Restzeitanzeige.
+ * Die Route wird immer segmentweise berechnet (je Wegpunktpaar ein Aufruf von fetchSegmentRoute).
+ * Mit Zwischenspeicher-Prüfung, Nebenläufigkeitskontrolle (AbortController & fortlaufende ID),
+ * Messung (performance.now nur für neu abgerufene Segmente), Schätzung und lernender Restzeitanzeige.
  */
 async function calculateRoute() {
   if (state.waypoints.length < 2) {
@@ -1959,8 +2260,22 @@ async function calculateRoute() {
 
   syncSegmentModes();
 
-  // 1. Schätzung vor dem Start (Summe Luftlinien, Grundlast + Faktor * km^1.3)
-  const estimation = estimateRouteCalculationSeconds(state.waypoints, state.segmentModes, state.selectedMode);
+  // Liste der Segment-URLs fuer alle Wegpunktpaare ermitteln
+  const segmentUrls = [];
+  for (let i = 0; i < state.waypoints.length - 1; i++) {
+    const wpA = state.waypoints[i];
+    const wpB = state.waypoints[i + 1];
+    const segMode = state.segmentModes[i] || state.selectedMode || 'kurvig';
+    segmentUrls.push(getSegmentUrl(wpA, wpB, segMode));
+  }
+
+  // 1. Schätzung vor dem Start (schätzt nur Segmente, die tatsächlich neu abgerufen werden)
+  const estimation = estimateRouteCalculationSeconds(
+    state.waypoints,
+    state.segmentModes,
+    segmentUrls,
+    state.selectedMode
+  );
 
   // 2. Nebenläufigkeit zuerst:
   // Beim Start einer neuen Berechnung wird die vorherige Anfrage per AbortController abgebrochen.
@@ -1975,123 +2290,95 @@ async function calculateRoute() {
   // Fortlaufende Nummer für diesen Durchlauf
   const thisCalculationId = ++currentCalculationId;
 
-  // 3. Fortschrittsanzeige starten oder nahtlos anpassen
+  // 3. Fortschrittsanzeige starten oder stoppen:
+  // Liegen alle Segmente im Speicher, wird die Fortschrittsanzeige gar nicht erst gestartet.
   state.isLoading = true;
-  startOrUpdateCalculationProgress(estimation.durationSeconds);
+  if (!estimation.allCached) {
+    startOrUpdateCalculationProgress(estimation.durationSeconds);
+  } else {
+    stopCalculationProgress();
+  }
 
   try {
-    const firstMode = state.segmentModes[0] || state.selectedMode || 'kurvig';
-    const allSameMode = state.segmentModes.every(m => m === firstMode);
+    // Die Route wird künftig immer segmentweise berechnet, also je Wegpunktpaar ein Aufruf von fetchSegmentRoute
+    const segmentResults = [];
+    let totalUncachedSeconds = 0;
+    let totalUncachedAirKm = 0;
+    let firstUncachedMode = null;
 
-    let combinedGeoJSON = null;
+    for (let i = 0; i < state.waypoints.length - 1; i++) {
+      const wpA = state.waypoints[i];
+      const wpB = state.waypoints[i + 1];
+      const segMode = state.segmentModes[i] || state.selectedMode || 'kurvig';
+      const segAirKm = getHaversineDistanceKm(wpA, wpB);
+      const segUrl = segmentUrls[i];
+      const isCached = segmentCache.has(segUrl);
 
-    if (allSameMode) {
-      const modeParams = MODE_PARAMETERS[firstMode] || MODE_PARAMETERS.kurvig;
-      const url = buildBRouterUrl(state.waypoints, PROFILE_ID, modeParams);
-
-      // Dauer der BRouter-Anfrage mit performance.now() vor und nach dem fetch messen
-      const t0 = performance.now();
-      let response;
-      try {
-        response = await fetch(url, { signal: abortSignal });
-      } catch (netErr) {
-        if (netErr.name === 'AbortError') throw netErr;
-        const err = new Error('Keine Internetverbindung zum Routing-Server');
-        err.userMessage = 'Keine Internetverbindung zum Routing-Server';
-        throw err;
-      }
-      const t1 = performance.now();
+      const t0 = isCached ? 0 : performance.now();
+      const segData = await fetchSegmentRoute(wpA, wpB, segMode, abortSignal, i, state.waypoints.length);
+      const t1 = isCached ? 0 : performance.now();
 
       // Antworten mit einer älteren Nummer als der aktuellen verwerfen
       if (thisCalculationId !== currentCalculationId) return;
 
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => '');
-        const userMsg = parseRoutingError(response.status, errorBody, state.waypoints, 0, state.waypoints.length);
-        const err = new Error(userMsg);
-        err.userMessage = userMsg;
-        throw err;
-      }
-
-      const data = await response.json();
-      if (thisCalculationId !== currentCalculationId) return;
-      if (!data.features || data.features.length === 0) {
-        const userMsg = `Keine Verbindung zwischen ${getWaypointLabel(0, state.waypoints.length)} und ${getWaypointLabel(state.waypoints.length - 1, state.waypoints.length)} gefunden`;
-        const err = new Error(userMsg);
-        err.userMessage = userMsg;
-        throw err;
-      }
-
-      combinedGeoJSON = data;
-
-      // Dauer erfassen und lernen (Treffer unter 300 ms sind Servercache und werden ignoriert)
-      const durationMs = t1 - t0;
-      const durationSeconds = durationMs / 1000;
-      if (durationMs >= 300) {
-        recordCalculationMeasurement(firstMode, estimation.totalAirKm, durationSeconds);
-      }
-    } else {
-      // Unterschiedliche Profile pro Segment: Segmente einzeln abrufen
-      const segmentResults = [];
-      for (let i = 0; i < state.waypoints.length - 1; i++) {
-        const wpA = state.waypoints[i];
-        const wpB = state.waypoints[i + 1];
-        const segMode = state.segmentModes[i] || state.selectedMode || 'kurvig';
-        const segAirKm = getHaversineDistanceKm(wpA, wpB);
-
-        const t0 = performance.now();
-        const segData = await fetchSegmentRoute(wpA, wpB, segMode, abortSignal, i, state.waypoints.length);
-        const t1 = performance.now();
-
-        if (thisCalculationId !== currentCalculationId) return;
-
-        const segDurationMs = t1 - t0;
-        const segDurationSeconds = segDurationMs / 1000;
-        if (segDurationMs >= 300) {
-          recordCalculationMeasurement(segMode, segAirKm, segDurationSeconds);
+      // Segmente aus dem Zwischenspeicher zählen weder bei der Zeit noch bei den Kilometern mit
+      if (!isCached) {
+        const segDurationSeconds = (t1 - t0) / 1000;
+        totalUncachedSeconds += segDurationSeconds;
+        totalUncachedAirKm += segAirKm;
+        if (!firstUncachedMode) {
+          firstUncachedMode = segMode;
         }
-
-        segmentResults.push(segData);
       }
 
-      if (thisCalculationId !== currentCalculationId) return;
-
-      // GeoJSON Geometrie und Eigenschaften kombinieren
-      const allCoordinates = [];
-      let totalLengthMeters = 0;
-      let totalTimeSeconds = 0;
-
-      segmentResults.forEach((segData, idx) => {
-        const feat = segData.features[0];
-        const coords = feat.geometry.coordinates;
-        if (idx === 0) {
-          allCoordinates.push(...coords);
-        } else {
-          allCoordinates.push(...coords.slice(1));
-        }
-
-        const props = feat.properties || {};
-        totalLengthMeters += parseFloat(props['track-length'] || 0);
-        totalTimeSeconds += parseFloat(props['total-time'] || 0);
-      });
-
-      combinedGeoJSON = {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'LineString',
-              coordinates: allCoordinates
-            },
-            properties: {
-              'track-length': String(totalLengthMeters),
-              'total-time': String(totalTimeSeconds)
-            }
-          }
-        ]
-      };
+      segmentResults.push(segData);
     }
+
+    if (thisCalculationId !== currentCalculationId) return;
+
+    // Über alle neu abgerufenen Segmente einer Berechnung genau einmal am Ende an recordCalculationMeasurement übergeben
+    // Liegt die Summe unter 300 Millisekunden, wird nichts gespeichert
+    if (firstUncachedMode && totalUncachedSeconds * 1000 >= 300 && totalUncachedAirKm > 0) {
+      recordCalculationMeasurement(firstUncachedMode, totalUncachedAirKm, totalUncachedSeconds);
+    }
+
+    if (thisCalculationId !== currentCalculationId) return;
+
+    // GeoJSON Geometrie und Eigenschaften kombinieren (gilt für alle Fälle)
+    const allCoordinates = [];
+    let totalLengthMeters = 0;
+    let totalTimeSeconds = 0;
+
+    segmentResults.forEach((segData, idx) => {
+      const feat = segData.features[0];
+      const coords = feat.geometry.coordinates;
+      if (idx === 0) {
+        allCoordinates.push(...coords);
+      } else {
+        allCoordinates.push(...coords.slice(1));
+      }
+
+      const props = feat.properties || {};
+      totalLengthMeters += parseFloat(props['track-length'] || 0);
+      totalTimeSeconds += parseFloat(props['total-time'] || 0);
+    });
+
+    const combinedGeoJSON = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: allCoordinates
+          },
+          properties: {
+            'track-length': String(totalLengthMeters),
+            'total-time': String(totalTimeSeconds)
+          }
+        }
+      ]
+    };
 
     if (thisCalculationId !== currentCalculationId) return;
 
