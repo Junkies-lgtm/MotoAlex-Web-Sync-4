@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geteilte Motorradroute ansehen &amp; als GPX laden | MotoAlex</title>
+  <meta name="description" content="Geteilte Motorradroute auf der Karte interaktiv ansehen, Kurven- und Höhenprofil prüfen und direkt in der MotoAlex-App oder als GPX-Datei öffnen.">
+  <meta name="keywords" content="Motorrad Route teilen, Motorrad Tour ansehen, GPX Download, Kurvenprofil, MotoAlex Route">
+  <meta name="author" content="MotoAlex Navigation">
+  <meta name="robots" content="index, follow">
+
+  <!-- Kanonische URL -->
+  <link rel="canonical" href="https://motoalex-navigation.de/route.html">
+
+  <!-- Font-Preloading -->
+  <link rel="preload" href="fonts/SpaceGrotesk-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/SpaceGrotesk-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Performance Preconnects für Karten-Bibliothek und Kacheln -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <meta property="og:title" content="Geteilte Motorradroute ansehen &amp; als GPX laden | MotoAlex">
+  <meta property="og:description" content="Geteilte Motorradroute auf der Karte interaktiv ansehen, Kurven- und Höhenprofil prüfen und als GPX-Datei laden.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://motoalex-navigation.de/route.html">
+  <meta property="og:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:secure_url" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Geteilte Route – MotoAlex Navigation">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="MotoAlex Navigation">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Geteilte Motorradroute ansehen &amp; als GPX laden | MotoAlex">
+  <meta name="twitter:description" content="Geteilte Motorradroute auf der Karte interaktiv ansehen, Kurven- und Höhenprofil prüfen und als GPX-Datei laden.">
+  <meta name="twitter:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+
+  <!-- Favicon & App-Icons -->
+  <link rel="icon" type="image/svg+xml" href="bilder/app-icon.svg">
+  <link rel="alternate icon" href="bilder/app-icon.png">
+  <link rel="apple-touch-icon" href="bilder/app-icon.png">
+  
+  <!-- MapLibre GL JS aus dem CDN (HTTPS) -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+
+  <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
+  <link rel="stylesheet" href="css/style.css?v=1.10">
+</head>
+<body class="page-route-view">
+
+  <!-- Kopfzeile / Navigation -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-link" id="brand-link">
+        <span>Moto<span style="color: var(--accent);">Alex</span></span>
+        <span class="brand-badge">Route</span>
+      </a>
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <a href="index.html" class="nav-link" id="nav-home">Start</a>
+        <a href="planer.html" class="nav-link" id="nav-planer">Routenplaner</a>
+        <a href="datenschutz.html" class="nav-link nav-link-legal" id="nav-privacy">Datenschutz</a>
+        <a href="impressum.html" class="nav-link nav-link-legal" id="nav-impressum">Impressum</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hauptbereich -->
+  <main class="main-content" style="padding-top: 24px; padding-bottom: 48px;">
+    <div class="container">
+
+      <!-- FEHLERANZEIGE (Wird sichtbar bei fehlerhafter oder unvollständiger Adresse) -->
+      <section id="route-error-container" class="route-state-box is-error-state" style="display: none;" aria-live="assertive">
+        <div class="state-icon">⚠️</div>
+        <h1 class="state-title" id="error-title">Routen-Adresse ungültig oder unvollständig</h1>
+        <p class="state-desc" id="error-description">
+          Die aufgerufene Webadresse enthält keine gültigen Streckenpunkte oder ist beschädigt.
+        </p>
+        <div id="error-details" class="state-details-box"></div>
+        <div class="state-actions">
+          <a href="planer.html" class="btn btn-primary" id="btn-goto-planer">
+            Zum Routenplaner wechseln &rarr;
+          </a>
+          <a href="index.html" class="btn btn-secondary">
+            Zur Startseite
+          </a>
+        </div>
+      </section>
+
+      <!-- ERFOLGSANZEIGE (Wird sichtbar wenn gültige Wegpunkte vorhanden sind) -->
+      <section id="route-success-container" class="route-view-layout" style="display: none;">
+        
+        <!-- Header mit Titel und Modus-Plakette -->
+        <div class="route-header-bar">
+          <div>
+            <div class="hero-tag" style="margin-bottom: 4px;">Geteilte Strecke</div>
+            <h1 class="route-page-title" id="route-display-title">Geplante Motorradroute</h1>
+          </div>
+          <div class="route-badges">
+            <span class="mode-badge" id="route-mode-badge">Profil: Kurvig</span>
+            <span class="points-count-badge" id="route-points-badge">0 Wegpunkte</span>
+          </div>
+        </div>
+
+        <!-- Kartenbereich & Übersicht -->
+        <div class="route-map-card">
+          <!-- Live-Statistiken über der Karte -->
+          <div class="route-card-stats" id="route-stats-bar">
+            <div class="route-stat-item">
+              <span class="stat-label">Distanz</span>
+              <span id="route-stat-distance" class="stat-val">-- km</span>
+            </div>
+            <div class="route-stat-item">
+              <span class="stat-label">Fahrzeit ca.</span>
+              <span id="route-stat-duration" class="stat-val">-- Min.</span>
+            </div>
+            <div class="route-stat-item">
+              <span class="stat-label">Wegpunkte</span>
+              <span id="route-stat-points" class="stat-val">--</span>
+            </div>
+          </div>
+
+          <!-- Interaktive Karte -->
+          <div class="map-wrapper" style="height: 480px;">
+            <div id="map"></div>
+          </div>
+        </div>
+
+        <!-- App-Handoff-Bereich (Deutlicher Hinweis auf MotoAlex-App) -->
+        <section class="app-handoff-card" id="app-handoff-section" aria-label="Route in App öffnen">
+          <div class="handoff-icon-wrapper">
+            <span class="handoff-icon">🏍️</span>
+          </div>
+          <div class="handoff-content">
+            <h2 class="handoff-title">In der MotoAlex-App öffnen & abfahren</h2>
+            <p class="handoff-text">
+              Diese geplante Route kann direkt in deiner <strong>MotoAlex Navigations-App</strong> auf dem Android-Smartphone geladen und <strong>100% offline</strong> mit Kurvenansicht und Sprachhinweisen abgefahren werden.
+            </p>
+            <div class="handoff-actions">
+              <!-- Platzhalter für Google Play Store Link -->
+              <a href="https://play.google.com/store/apps/details?id=de.motoalex.navigation" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-playstore" id="playstore-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink: 0;"><path d="M3.609 1.814L13.792 12 3.61 22.186a2.41 2.41 0 0 1-.61-.954V2.768c0-.348.217-.68.61-.954zm11.246 11.246l2.124 2.124-11.5 6.64 9.376-8.764zm0-2.12L5.48 2.176l11.5 6.64-2.125 2.124zm1.488 1.488l3.418 1.974c.837.483.837 1.267 0 1.75l-3.418 1.974-1.89-1.85 1.89-1.848z"/></svg>
+                <span>MotoAlex im Google Play Store (Platzhalter)</span>
+              </a>
+              <a href="#" class="btn btn-secondary" id="btn-open-in-planer">
+                Im Web-Planer bearbeiten
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Liste der gesetzten Wegpunkte -->
+        <div class="route-waypoints-card">
+          <h2 class="section-heading" style="font-size: 1.25rem; margin-bottom: 16px;">Wegpunkt-Übersicht</h2>
+          <ul class="route-wp-list" id="route-waypoints-list"></ul>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Fusszeile -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-copy">
+        &copy; 2026 MotoAlex Navigation – 100% Offline-Motorradnavigation
+      </div>
+      <div class="footer-actions-row">
+        <a href="https://www.instagram.com/MotoAlex_Navigation" target="_blank" rel="noopener noreferrer me" class="footer-social-link" title="MotoAlex Navigation auf Instagram (@MotoAlex_Navigation)" aria-label="MotoAlex auf Instagram">
+          <svg class="social-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          <span>Instagram</span>
+        </a>
+        <nav class="footer-nav" aria-label="Fusszeilen-Navigation">
+          <a href="index.html">Start</a>
+          <a href="planer.html">Routenplaner</a>
+          <a href="datenschutz.html">Datenschutz</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Zentrale URL-Logik (Erzeugen & Parsen) -->
+  <script src="js/route-url.js"></script>
+
+  <!-- Route Viewer Logik -->
+  <script src="js/route.js"></script>
+
+</body>
+</html>

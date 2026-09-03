@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotoAlex – Kostenlose Motorrad-Navi App &amp; Kurvenrouting (Offline)</title>
+  <meta name="description" content="Kostenlose Motorrad-Navigations-App für kurvige Strecken. 100% offline nutzbar mit OpenStreetMap-Karten, Tempolimits &amp; GPX-Export – ganz ohne Abo.">
+  <meta name="keywords" content="Motorrad Navigation, Motorrad Navi App, Kurvenrouting, Kurvige Strecken, Offline Navigation Motorrad, GPX Export Motorrad, Motorrad Routenplaner, MotoAlex">
+  <meta name="author" content="MotoAlex Navigation">
+  <meta name="robots" content="index, follow">
+
+  <!-- Kanonische URL -->
+  <link rel="canonical" href="https://motoalex-navigation.de/">
+
+  <!-- Font-Preloading für beste Core Web Vitals (FCP / LCP) -->
+  <link rel="preload" href="fonts/SpaceGrotesk-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/SpaceGrotesk-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <meta property="og:title" content="MotoAlex – Kostenlose Motorrad-Navi App &amp; Kurvenrouting (Offline)">
+  <meta property="og:description" content="Kostenlose Motorrad-Navigations-App für kurvige Strecken. 100% offline nutzbar mit OpenStreetMap-Karten, Tempolimits &amp; GPX-Export – ohne Abo.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://motoalex-navigation.de/">
+  <meta property="og:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:secure_url" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MotoAlex Navigation – Kurvige Motorrad-Routen &amp; Navigation">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="MotoAlex Navigation">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MotoAlex – Kostenlose Motorrad-Navi App &amp; Kurvenrouting (Offline)">
+  <meta name="twitter:description" content="Kostenlose Motorrad-Navigations-App für kurvige Strecken. 100% offline nutzbar mit OpenStreetMap-Karten, Tempolimits &amp; GPX-Export – ohne Abo.">
+  <meta name="twitter:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+
+  <!-- Favicon & App-Icons -->
+  <link rel="icon" type="image/svg+xml" href="bilder/app-icon.svg">
+  <link rel="alternate icon" href="bilder/app-icon.png">
+  <link rel="apple-touch-icon" href="bilder/app-icon.png">
+
+  <!-- Strukturierte Daten (Schema.org / JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://motoalex-navigation.de/#website",
+        "url": "https://motoalex-navigation.de/",
+        "name": "MotoAlex Navigation",
+        "description": "Kostenlose Offline-Navigations-App für Motorradfahrer mit kurvenoptimiertem Routing ohne Abo.",
+        "inLanguage": "de-DE",
+        "sameAs": [
+          "https://www.instagram.com/MotoAlex_Navigation"
+        ]
+      },
+      {
+        "@type": "MobileApplication",
+        "@id": "https://motoalex-navigation.de/#app",
+        "name": "MotoAlex Navigation",
+        "url": "https://motoalex-navigation.de/",
+        "operatingSystem": "Android",
+        "applicationCategory": "NavigationApplication",
+        "applicationSubCategory": "Motorcycle Navigation",
+        "description": "Kostenlose Offline-Navigations-App für Motorradfahrer mit kurvenoptimiertem Routing, Tempolimits und OpenStreetMap-Karten ohne Abo.",
+        "image": "https://motoalex-navigation.de/bilder/og-banner.png",
+        "sameAs": [
+          "https://www.instagram.com/MotoAlex_Navigation"
+        ],
+        "screenshot": [
+          "https://motoalex-navigation.de/bilder/screenshot-navigation-hochformat.webp",
+          "https://motoalex-navigation.de/bilder/screenshot-navigation-querformat.webp",
+          "https://motoalex-navigation.de/bilder/screenshot-kurvenprofil-hochformat.webp",
+          "https://motoalex-navigation.de/bilder/screenshot-offline-karten-hochformat.webp"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        "featureList": [
+          "Kurvenoptimiertes Routing (schnell, ausgewogen, extra kurvig)",
+          "100% Offline-Navigation ohne Mobilfunk",
+          "Kostenlos ohne Abo oder In-App-Käufe",
+          "GPX-Export & Import",
+          "Klares Cockpit mit Tempolimits"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://motoalex-navigation.de/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Ist MotoAlex wirklich komplett kostenlos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ja. MotoAlex wird als freies Projekt bereitgestellt. Es gibt keine versteckten Kosten, keine Testzeiträume und keine kostenpflichtigen Premium-Modelle."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Benötige ich unterwegs eine Internetverbindung?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nein. Nach dem einmaligen Herunterladen der gewünschten Regionalkarten in der App funktioniert die Navigation vollständig ohne mobile Datenverbindung."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Wie unterscheidet sich der Web-Routenplaner von der App?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Der Web-Routenplaner dient der schnellen Vorabplanung am Computer oder Tablet. Berechnete Strecken können per GPX-Datei direkt in die MotoAlex-App oder andere Navigationsgeräte übertragen werden."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Welches Kartenmaterial wird verwendet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "MotoAlex nutzt die freien Geodaten des OpenStreetMap-Projekts, die weltweit von Millionen Nutzern aktuell gehalten werden."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Werden meine Fahrdaten aufgezeichnet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nein. Deine Standortdaten bleiben ausschließlich auf deinem Endgerät. Es findet keine Übertragung von Bewegungsprofilen an externe Server statt."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Zentrales Stylesheet (Relative Pfadangabe fuer GitHub Pages) -->
+  <link rel="stylesheet" href="css/style.css?v=1.10">
+
+  <!-- ==========================================================================
+       SCREENSHOT-BILDER DATENSTRUKTUR (Hinzufuegen / Entfernen von Bildern)
+       ==========================================================================
+       Hier koennen beliebige WebP-Bilder aus dem Ordner "bilder/" eingetragen werden.
+       Der Slider passt sich automatisch an jede Anzahl von Bildern an.
+       ========================================================================== -->
+  <script>
+    const SCREENSHOT_BILDER = [
+      {
+        dateiname: 'screenshot-navigation-hochformat.webp',
+        unterschrift: 'Navigationsansicht während der Fahrt im Hochformat mit Abbiegehinweisen und Tempolimit',
+        alt: 'Navigationsansicht der MotoAlex-App im Hochformat während der Fahrt',
+        breite: 1080,
+        hoehe: 2400
+      },
+      {
+        dateiname: 'screenshot-navigation-querformat.webp',
+        unterschrift: 'Navigationsansicht während der Fahrt im Querformat für Lenker- und Cockpithalterungen',
+        alt: 'Navigationsansicht der MotoAlex-App im Querformat während der Fahrt',
+        breite: 2400,
+        hoehe: 1080
+      },
+      {
+        dateiname: 'screenshot-kurvenprofil-hochformat.webp',
+        unterschrift: 'Kurvenprofil und Streckenverlauf der berechneten Route im Hochformat',
+        alt: 'Darstellung des Kurvenprofils der Route in der Hochformatansicht',
+        breite: 1080,
+        hoehe: 2400
+      },
+      {
+        dateiname: 'screenshot-kurvenprofil-querformat.webp',
+        unterschrift: 'Kurvenprofil und Höhenverlauf der Route im Querformat',
+        alt: 'Darstellung des Kurvenprofils und Streckenverlaufs im Querformat',
+        breite: 2400,
+        hoehe: 1080
+      },
+      {
+        dateiname: 'screenshot-offline-karten-hochformat.webp',
+        unterschrift: 'Offline-Kartenverwaltung mit Länderauswahl und Downloadstatus',
+        alt: 'Übersicht der Offline-Kartenverwaltung mit Downloadoptionen nach Regionen',
+        breite: 1080,
+        hoehe: 2400
+      },
+      {
+        dateiname: 'screenshot-offline-karten-hochformat-2.webp',
+        unterschrift: 'Detailansicht der installierten Kartenregionen und des belegten Speicherplatzes',
+        alt: 'Detailansicht der heruntergeladenen Kartendaten in der Offline-Verwaltung',
+        breite: 1080,
+        hoehe: 2400
+      }
+      // HIER WEITERE BILDER ERGAENZEN:
+      // Einfach ein neues Objekt mit Komma getrennt anhaengen:
+      // {
+      //   dateiname: 'dein-neues-bild.webp',
+      //   unterschrift: 'Deine Bildunterschrift',
+      //   alt: 'Aussagekraeftiger Alternativtext fuer Barrierefreiheit',
+      //   breite: 1080,
+      //   hoehe: 2400
+      // }
+    ];
+  </script>
+</head>
+<body>
+
+  <!-- Kopfzeile / Navigation -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-link" id="brand-link">
+        <span>Moto<span style="color: var(--accent);">Alex</span></span>
+        <span class="brand-badge">Navigation</span>
+      </a>
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <a href="index.html" class="nav-link active" id="nav-home">Start</a>
+        <a href="planer.html" class="nav-link" id="nav-planer">Routenplaner</a>
+        <a href="datenschutz.html" class="nav-link nav-link-legal" id="nav-privacy">Datenschutz</a>
+        <a href="impressum.html" class="nav-link nav-link-legal" id="nav-impressum">Impressum</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hauptinhalt -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Aufmacher / Hero -->
+      <section class="hero-section" id="hero">
+        <div class="hero-tag">Motorrad-Navigation</div>
+        <h1 class="hero-title">Kurvenoptimierte Motorradnavigation. Kostenlos und ohne Abo.</h1>
+        <p class="hero-lead">
+          MotoAlex bringt dich ueber kurvige Landstrassen statt ueber oede Autobahnen ans Ziel. 
+          Vollstaendig offline nutzbar, ohne versteckte Kosten und ohne Registrierungszwang.
+        </p>
+
+        <div class="hero-actions">
+          <a href="planer.html" class="btn btn-primary" id="hero-btn-planer">
+            Routenplaner oeffnen &rarr;
+          </a>
+
+          <!-- Platzhalter fuer Play-Store-Knopf -->
+          <div class="store-badge-placeholder" id="play-store-placeholder">
+            <span>Bald im</span>
+            <strong>Google Play Store verfügbar</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kernmerkmale -->
+      <section class="features-section" id="features">
+        <h2 class="section-heading">Kernmerkmale</h2>
+        <p class="section-intro">
+          Entwickelt fuer Motorradfahrer, die Wert auf Fahrspass und Unabhaengigkeit legen.
+        </p>
+
+        <div class="features-grid">
+          <div class="feature-item" id="feature-1">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19c3-1.5 5-7 8-7s5 7 8 5.5" />
+                  <path d="M4 12.5c3-1.5 5-7 8-7s5 7 8 5.5" opacity="0.4" />
+                </svg>
+              </span>
+            </div>
+            <h3>Kurvenoptimiertes Routing</h3>
+            <p>Wähle zwischen schnell, ausgewogen und extra kurvig, und das für jeden Abschnitt zwischen zwei Zwischenzielen einzeln. Die Berechnung meidet monotone Strecken und sucht gezielt nach fahrbaren Landstraßen.</p>
+          </div>
+
+          <div class="feature-item" id="feature-2">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="2" y1="2" x2="22" y2="22" />
+                  <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+                  <path d="M4.9 12.9a10 10 0 0 1 5.6-2.8" />
+                  <path d="M14.5 10.7a10 10 0 0 1 4.6 2.2" />
+                  <path d="M1.4 8.8a15 15 0 0 1 7.2-2.7" />
+                  <path d="M17.8 7a15 15 0 0 1 4.8 1.8" />
+                  <circle cx="12" cy="20" r="1" fill="currentColor" />
+                </svg>
+              </span>
+            </div>
+            <h3>Vollständig offline</h3>
+            <p>Karten und Routingdaten liegen auf dem Handy. Navigation funktioniert im Funkloch genauso wie zu Hause, ohne Datenverbindung.</p>
+          </div>
+
+          <div class="feature-item" id="feature-3">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" stroke-width="2.5" />
+                </svg>
+              </span>
+            </div>
+            <h3>Kostenlos und ohne Konto</h3>
+            <p>Keine Registrierung, kein Abo, keine In-App-Käufe, keine Werbung. App installieren und losfahren.</p>
+          </div>
+
+          <div class="feature-item" id="feature-4">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="12" height="9" rx="1.5" />
+                  <path d="M5 15h6" />
+                  <path d="M8 12v3" />
+                  <rect x="16" y="9" width="6" height="12" rx="1.5" />
+                  <path d="M11 7.5h4.5m0 0l-2-2m2 2l-2 2" />
+                </svg>
+              </span>
+            </div>
+            <h3>Planen am großen Bildschirm</h3>
+            <p>Route im Web-Planer bauen und per Link oder QR-Code aufs Handy schicken. GPX-Import und -Export folgen später.</p>
+          </div>
+
+          <div class="feature-item" id="feature-5">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+            </div>
+            <h3>Keine Datensammlung</h3>
+            <p>Deine Routen und aufgezeichneten Fahrten bleiben auf deinem Handy. Kein Konto, keine Übertragung an einen Server, kein Bewegungsprofil.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- App-Screenshots Slider (Eigener Abschnitt) -->
+      <section class="slider-section" id="screenshots-section" aria-label="App-Screenshots">
+        <h2 class="section-heading">App-Einblicke & Screenshots</h2>
+        <p class="section-intro">
+          Eindrücke aus der Praxis: Ob im Hochformat am Lenker oder im Querformat im Cockpit.
+        </p>
+
+        <div class="screenshot-slider" id="screenshot-slider" tabindex="0" role="region" aria-roledescription="Karussell" aria-label="Screenshots der MotoAlex App">
+          
+          <!-- Slider Buehne -->
+          <div class="slider-stage-wrapper">
+            <!-- Pfeil Links -->
+            <button type="button" class="slider-arrow slider-arrow-prev" id="slider-btn-prev" aria-label="Vorheriges Bild anzeigen" title="Vorheriges Bild (&larr;)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+
+            <!-- Slides Container -->
+            <div class="slider-track" id="slider-track">
+              <!-- Dynamisch aus SCREENSHOT_BILDER befuellt -->
+            </div>
+
+            <!-- Pfeil Rechts -->
+            <button type="button" class="slider-arrow slider-arrow-next" id="slider-btn-next" aria-label="Nächstes Bild anzeigen" title="Nächstes Bild (&rarr;)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+
+          <!-- Bildunterschrift & Zaehler -->
+          <div class="slider-caption-container">
+            <div class="slider-caption-text" id="slider-caption" aria-live="polite"></div>
+            <div class="slider-counter" id="slider-counter" aria-hidden="true"></div>
+          </div>
+
+          <!-- Punkte-Navigation (Dots) -->
+          <div class="slider-dots" id="slider-dots" role="tablist" aria-label="Bildauswahl">
+            <!-- Dynamisch aus SCREENSHOT_BILDER befuellt -->
+          </div>
+
+          <div class="slider-hint">Tipp: Navigiere mit den Pfeiltasten &larr; / &rarr; oder wische auf dem Touchscreen.</div>
+
+        </div>
+      </section>
+
+      <!-- Stand der Entwicklung -->
+      <section class="status-section" id="status">
+        <h2 class="section-heading">Stand der Entwicklung</h2>
+        <p class="section-intro">
+          MotoAlex entsteht als Feierabendprojekt. Hier siehst du, wo es gerade steht.
+        </p>
+
+        <div class="status-grid">
+          
+          <!-- Fertig -->
+          <div class="status-column status-done" id="status-col-done">
+            <h3>Fertig</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kurvige Routen statt schnellster Weg</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Navigation mit Abbiegehinweisen</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Vollständig offline, ohne Internet und ohne Konto</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Automatische Neuberechnung bei Abweichung</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Sperrungen umfahren auf Knopfdruck</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Routenplanung mit Zwischenzielen und gespeicherten Routen</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Blitzerwarnung und Fahrtaufzeichnung</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Routenplaner auf der Webseite mit Teilen per Link und QR-Code</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Eigener Routenserver für die Webseite</span></li>
+            </ul>
+          </div>
+
+          <!-- In Arbeit -->
+          <div class="status-column status-wip" id="status-col-wip">
+            <h3>In Arbeit</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kartenverwaltung mit Warteschlange und Empfehlungen zum Standort</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kartenabdeckung über Deutschland hinaus</span></li>
+            </ul>
+          </div>
+
+          <!-- Geplant -->
+          <div class="status-column status-planned" id="status-col-planned">
+            <h3>Geplant</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Veröffentlichung im Play Store</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Testbetrieb mit mehreren Fahrern</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Rundkurse ab einem Startpunkt</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Sprachansage</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>GPX-Dateien importieren und exportieren</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Adresssuche auf der Webseite</span></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Abgesetzter Kasten: Tester gesucht -->
+        <div class="tester-box" id="tester-box">
+          <h3>Tester gesucht</h3>
+          <p>
+            Die App ist noch nicht im Play Store. Davor steht eine Testphase mit echten Fahrern. Wer mitmachen und MotoAlex vorab nutzen möchte, schreibt mir einfach.
+          </p>
+          <a href="#tester-box" class="btn btn-primary" id="btn-become-tester">
+            Tester werden
+          </a>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="faq-section" id="faq">
+        <h2 class="section-heading">Haeufig gestellte Fragen</h2>
+        <p class="section-intro">Klare Antworten auf die wichtigsten Fragen zur Nutzung.</p>
+
+        <div class="faq-list">
+          <div class="faq-item" id="faq-1">
+            <h3>Ist MotoAlex kostenlos?</h3>
+            <p>Ja. Kein Abo, keine In-App-Käufe, keine Werbung und kein Testzeitraum, der irgendwann abläuft. Es gibt auch keine Registrierung, du brauchst kein Konto.</p>
+          </div>
+
+          <div class="faq-item" id="faq-2">
+            <h3>Wo bekomme ich die App?</h3>
+            <p>Die App ist noch nicht im Play Store. Davor steht eine Testphase mit echten Fahrern. Wer mitfahren und MotoAlex vorab nutzen möchte, meldet sich über den Knopf "Tester werden".</p>
+          </div>
+
+          <div class="faq-item" id="faq-3">
+            <h3>Benötige ich unterwegs eine Internetverbindung?</h3>
+            <p>Nein. Nach dem einmaligen Herunterladen der gewünschten Karten funktioniert die Navigation vollständig ohne mobile Daten, auch im Funkloch.</p>
+          </div>
+
+          <div class="faq-item" id="faq-4">
+            <h3>Wie schnell wird eine Route berechnet?</h3>
+            <p>Die Berechnung läuft komplett auf deinem Handy, ohne Server im Hintergrund. Auf meinem Gerät dauert eine Tour über 400 Kilometer rund 45 Sekunden, kürzere Strecken entsprechend weniger. Je nach Handy kann es etwas schneller oder langsamer sein. Gespeicherte Routen sind sofort da, weil die Berechnung mit abgelegt wird.</p>
+          </div>
+
+          <div class="faq-item" id="faq-5">
+            <h3>Wie unterscheidet sich der Web-Routenplaner von der App?</h3>
+            <p>Der Planer ist für die Vorbereitung am großen Bildschirm gedacht. Die fertige Route schickst du per Link oder QR-Code aufs Handy und öffnest sie dort direkt in der App. GPX-Export folgt später.</p>
+          </div>
+
+          <div class="faq-item" id="faq-6">
+            <h3>Welches Kartenmaterial wird verwendet?</h3>
+            <p>Die freien Geodaten des OpenStreetMap-Projekts, die weltweit von Millionen Menschen aktuell gehalten werden.</p>
+          </div>
+
+          <div class="faq-item" id="faq-7">
+            <h3>Was muss ich herunterladen, bevor es losgeht?</h3>
+            <p>Drei Dinge, alle direkt in der App. Die Kartendarstellung wählst du je Bundesland, damit lädst du nur das, was du wirklich brauchst. Die Routingdaten kommen als große Kacheln, für Deutschland sind es sechs, du brauchst die Kachel deiner Region und die der Nachbarregionen, wenn du dorthin fährst. Dazu kommt optional das Adressbuch für die Ortssuche ohne Internet. Wenn dir Speicherplatz egal ist, lädst du einfach alles und musst dich nie wieder damit befassen. Wenn er knapp ist, stellst du dir genau zusammen, was du fährst.</p>
+          </div>
+
+          <div class="faq-item" id="faq-8">
+            <h3>Wie aktuell sind die Karten?</h3>
+            <p>Ich aktualisiere die Kartendaten regelmäßig, sie stammen aus dem OpenStreetMap-Projekt. Aktuell prüfst du in der App selbst, ob es etwas Neues gibt. Dass die App von allein Bescheid sagt, wenn eine Aktualisierung bereitsteht, ist in Arbeit.</p>
+          </div>
+
+          <div class="faq-item" id="faq-9">
+            <h3>Welche Gebiete sind verfügbar?</h3>
+            <p>Zurzeit Deutschland. Weitere Länder sind in Arbeit.</p>
+          </div>
+
+          <div class="faq-item" id="faq-10">
+            <h3>Werden meine Fahrdaten aufgezeichnet?</h3>
+            <p>Nein. Aufgezeichnete Fahrten und gespeicherte Routen bleiben auf deinem Gerät. Die App überträgt keine Standortdaten an einen Server und legt kein Bewegungsprofil an.</p>
+          </div>
+
+          <div class="faq-item" id="faq-11">
+            <h3>Warnt MotoAlex vor Blitzern?</h3>
+            <p>Die App kennt ortsfeste Anlagen und zeigt sie auf der Route an. Mobile Kontrollen sind bewusst nicht enthalten, dafür gibt es keine verlässliche Datenquelle und in Deutschland wäre eine solche Warnung während der Fahrt auch nicht erlaubt. Verstehe die Anzeige als Hinweis auf die Umgebung, nicht als Freibrief.</p>
+          </div>
+
+          <div class="faq-item" id="faq-12">
+            <h3>Was passiert mit meinen Daten auf dieser Webseite?</h3>
+            <p>Beim Berechnen einer Route im Planer werden die gesetzten Koordinaten an den Routendienst übertragen, sonst nichts. Es gibt keine Cookies, kein Tracking und keine Analysedienste. Einzelheiten stehen in der <a href="datenschutz.html" style="color: var(--accent); text-decoration: underline;">Datenschutzerklärung</a>.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Fusszeile -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>MotoAlex Navigation</strong> &ndash; Kostenlose Motorrad-Navigation
+      </div>
+      <div class="footer-actions-row">
+        <a href="https://www.instagram.com/MotoAlex_Navigation" target="_blank" rel="noopener noreferrer me" class="footer-social-link" title="MotoAlex Navigation auf Instagram folgen (@MotoAlex_Navigation)" aria-label="MotoAlex auf Instagram">
+          <svg class="social-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          <span>Instagram: @MotoAlex_Navigation</span>
+        </a>
+        <nav class="footer-nav" aria-label="Fussnavigation">
+          <a href="index.html">Start</a>
+          <a href="planer.html">Routenplaner</a>
+          <a href="datenschutz.html">Datenschutz</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slider Vanilla JavaScript Logik -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const track = document.getElementById('slider-track');
+      const dotsContainer = document.getElementById('slider-dots');
+      const captionEl = document.getElementById('slider-caption');
+      const counterEl = document.getElementById('slider-counter');
+      const prevBtn = document.getElementById('slider-btn-prev');
+      const nextBtn = document.getElementById('slider-btn-next');
+      const sliderContainer = document.getElementById('screenshot-slider');
+
+      if (!track || !dotsContainer || typeof SCREENSHOT_BILDER === 'undefined' || SCREENSHOT_BILDER.length === 0) {
+        return;
+      }
+
+      let currentIndex = 0;
+      const totalSlides = SCREENSHOT_BILDER.length;
+
+      // 1. Slides und Punkte dynamisch generieren
+      SCREENSHOT_BILDER.forEach((item, index) => {
+        // Slide-Element
+        const slide = document.createElement('div');
+        slide.className = 'slider-slide' + (index === 0 ? ' is-active' : '');
+        slide.id = `slide-${index}`;
+        slide.setAttribute('role', 'tabpanel');
+        slide.setAttribute('aria-label', `Screenshot ${index + 1} von ${totalSlides}`);
+
+        const img = document.createElement('img');
+        img.src = `bilder/${item.dateiname}`;
+        img.alt = item.alt || item.unterschrift || `Screenshot ${index + 1}`;
+        img.width = item.breite || 1080;
+        img.height = item.hoehe || 2400;
+        img.setAttribute('decoding', 'async');
+        if (index === 0) {
+          img.setAttribute('loading', 'eager');
+          img.setAttribute('fetchpriority', 'high');
+        } else {
+          img.setAttribute('loading', 'lazy');
+          img.setAttribute('fetchpriority', 'low');
+        }
+
+        slide.appendChild(img);
+        track.appendChild(slide);
+
+        // Punkt (Dot)
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'slider-dot' + (index === 0 ? ' is-active' : '');
+        dot.setAttribute('role', 'tab');
+        dot.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+        dot.setAttribute('aria-label', `Gehe zu Bild ${index + 1}: ${item.unterschrift}`);
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+      });
+
+      // 2. Status aktualisieren
+      function updateSlider(index) {
+        const slides = track.querySelectorAll('.slider-slide');
+        const dots = dotsContainer.querySelectorAll('.slider-dot');
+
+        slides.forEach((slide, idx) => {
+          if (idx === index) {
+            slide.classList.add('is-active');
+          } else {
+            slide.classList.remove('is-active');
+          }
+        });
+
+        dots.forEach((dot, idx) => {
+          if (idx === index) {
+            dot.classList.add('is-active');
+            dot.setAttribute('aria-selected', 'true');
+          } else {
+            dot.classList.remove('is-active');
+            dot.setAttribute('aria-selected', 'false');
+          }
+        });
+
+        const currentData = SCREENSHOT_BILDER[index];
+        if (captionEl && currentData) {
+          captionEl.textContent = currentData.unterschrift;
+        }
+        if (counterEl) {
+          counterEl.textContent = `${index + 1} / ${totalSlides}`;
+        }
+
+        currentIndex = index;
+      }
+
+      function goToSlide(index) {
+        let nextIdx = index;
+        if (nextIdx >= totalSlides) nextIdx = 0;
+        if (nextIdx < 0) nextIdx = totalSlides - 1;
+        updateSlider(nextIdx);
+      }
+
+      function nextSlide() {
+        goToSlide(currentIndex + 1);
+      }
+
+      function prevSlide() {
+        goToSlide(currentIndex - 1);
+      }
+
+      // Initialanzeige
+      updateSlider(0);
+
+      // 3. Event-Listener fuer Pfeile
+      if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+      if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+
+      // 4. Tastatursteuerung bei Fokus auf Slider
+      if (sliderContainer) {
+        sliderContainer.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            prevSlide();
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            nextSlide();
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            goToSlide(0);
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            goToSlide(totalSlides - 1);
+          }
+        });
+      }
+
+      // 5. Touch-Wischgesten (Swipe) auf Mobilgeraeten
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchEndX = 0;
+      let touchEndY = 0;
+
+      track.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      track.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+      }, { passive: true });
+
+      function handleSwipe() {
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        // Wischgeste erkennen: Mindestens 40px horizontaler Versatz und staerker als vertikales Scrollen
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+          if (diffX < 0) {
+            nextSlide(); // Nach links gewischt -> weiter
+          } else {
+            prevSlide(); // Nach rechts gewischt -> zurueck
+          }
+        }
+      }
+
+      // 6. E-Mail-Adresse fuer "Tester werden"-Knopf dynamisch zusammensetzen (Spamschutz)
+      const testerBtn = document.getElementById('btn-become-tester');
+      if (testerBtn) {
+        const user = 'webmaster';
+        const domain = 'motoalex-navigation.de';
+        const subject = encodeURIComponent('MotoAlex Tester');
+        const mailtoUrl = 'mailto:' + user + '@' + domain + '?subject=' + subject;
+        testerBtn.setAttribute('href', mailtoUrl);
+        testerBtn.addEventListener('click', function(e) {
+          window.location.href = mailtoUrl;
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

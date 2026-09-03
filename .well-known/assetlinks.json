@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.motoalex.navigation",
+      "sha256_cert_fingerprints": [
+        "55:B7:DF:AD:27:77:49:E5:85:B6:70:E7:7C:43:6B:62:47:98:93:07:C6:AD:29:03:12:55:C0:1E:FF:12:B6:88",
+        "54:4D:C1:D2:E9:FF:86:B9:9D:DB:79:D9:0C:6A:ED:8B:D9:43:23:65:BC:6C:96:D7:DE:B1:02:E9:BE:A6:58:74"
+      ]
+    }
+  }
+]

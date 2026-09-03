@@ -1,0 +1,8 @@
+{
+  "name": "Webseite MotoAlex Navigation 1.03",
+  "description": "Kostenlose Offline-Navigations-App für Motorradfahrer mit kurvenoptimiertem Routing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

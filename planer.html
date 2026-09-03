@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motorrad Routenplaner online – Kurvige Strecken planen &amp; GPX Export | MotoAlex</title>
+  <meta name="description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren interaktiv planen, Kurven- und Höhenprofil prüfen und direkt als GPX-Datei exportieren.">
+  <meta name="keywords" content="Motorrad Routenplaner, Motorrad Tour planen, kurvige Motorradstrecken, GPX Export, Kurvenrouting online, MotoAlex Planer">
+  <meta name="author" content="MotoAlex Navigation">
+  <meta name="robots" content="index, follow">
+
+  <!-- Kanonische URL -->
+  <link rel="canonical" href="https://motoalex-navigation.de/planer.html">
+
+  <!-- Font-Preloading für schnelle Typografie & LCP -->
+  <link rel="preload" href="fonts/SpaceGrotesk-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/SpaceGrotesk-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Performance Preconnects für Karten-Bibliothek und Kacheln -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <meta property="og:title" content="Motorrad Routenplaner online – Kurvige Strecken &amp; GPX Export | MotoAlex">
+  <meta property="og:description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren planen, Höhenprofil prüfen und als GPX exportieren.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://motoalex-navigation.de/planer.html">
+  <meta property="og:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:secure_url" content="https://motoalex-navigation.de/bilder/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MotoAlex Navigation Routenplaner – Kurvige Strecken online planen">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="MotoAlex Navigation">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Motorrad Routenplaner online – Kurvige Strecken &amp; GPX Export | MotoAlex">
+  <meta name="twitter:description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren planen, Höhenprofil prüfen und als GPX exportieren.">
+  <meta name="twitter:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
+
+  <!-- Favicon & App-Icons -->
+  <link rel="icon" type="image/svg+xml" href="bilder/app-icon.svg">
+  <link rel="alternate icon" href="bilder/app-icon.png">
+  <link rel="apple-touch-icon" href="bilder/app-icon.png">
+
+  <!-- Strukturierte Daten (Schema.org / JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "MotoAlex Routenplaner",
+    "url": "https://motoalex-navigation.de/planer.html",
+    "applicationCategory": "NavigationApplication",
+    "applicationSubCategory": "Motorcycle Route Planner",
+    "operatingSystem": "All modern browsers (Web)",
+    "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & WebGL.",
+    "description": "Kostenloser Online-Motorrad-Routenplaner mit kurvenoptimierter Streckenführung, Höhen- & Kurvenprofil und direktem GPX-Export.",
+    "image": "https://motoalex-navigation.de/bilder/og-banner.png",
+    "sameAs": [
+      "https://www.instagram.com/MotoAlex_Navigation"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    },
+    "featureList": [
+      "Interaktive Routenplanung mit Wegpunkten",
+      "Kurvenoptimierte Streckenberechnung",
+      "GPX-Export für Smartphone und Navigationsgeräte",
+      "Geteilte Routen-Links via QR-Code"
+    ]
+  }
+  </script>
+  
+  <!-- MapLibre GL JS aus dem CDN (HTTPS) -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+
+  <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
+  <link rel="stylesheet" href="css/style.css?v=1.12">
+</head>
+<body class="page-planer">
+
+  <!-- Kopfzeile / Navigation -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-link" id="brand-link">
+        <span>Moto<span style="color: var(--accent);">Alex</span></span>
+        <span class="brand-badge">Planer</span>
+      </a>
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <a href="index.html" class="nav-link" id="nav-home">Start</a>
+        <a href="planer.html" class="nav-link active" id="nav-planer">Routenplaner</a>
+        <a href="datenschutz.html" class="nav-link nav-link-legal" id="nav-privacy">Datenschutz</a>
+        <a href="impressum.html" class="nav-link nav-link-legal" id="nav-impressum">Impressum</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Planer Hauptbereich (Volle Bildschirmflaeche) -->
+  <main class="planer-app-container">
+    
+    <!-- Linke Seitenleiste: Einstellungen & Wegpunkte (ca. 320px fest) -->
+    <aside class="planer-sidebar" aria-label="Routensteuerung">
+      
+      <!-- Schnelle Offline-Ortssuche & Pässe-Finder -->
+      <div class="search-box-container">
+        <label for="address-search-input" class="control-label">Ort / Pass / PLZ suchen</label>
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="address-search-input" 
+            class="text-input search-input" 
+            placeholder="Stadt, PLZ oder Pass (z. B. Köln, Harz, Stelvio)..." 
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button type="button" id="btn-clear-search" class="search-clear-btn" title="Suche leeren" style="display: none;">✕</button>
+        </div>
+        <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;"></div>
+      </div>
+
+      <!-- Routing-Modus Auswahl -->
+      <div class="control-group">
+        <label for="routing-mode" class="control-label">Routenprofil</label>
+        <select id="routing-mode" class="select-input">
+          <option value="schnellste">🚀 Schnellste</option>
+          <option value="schnell">💨 Schnell</option>
+          <option value="kurvig" selected>🏍️ Kurvig</option>
+          <option value="extra_kurvig">⚡ Extra kurvig</option>
+        </select>
+      </div>
+
+      <!-- Profil-Erklärung -->
+      <div id="profile-info-box" class="profile-info-box" aria-live="polite">
+        <div class="profile-info-header">
+          <span id="profile-info-icon" class="profile-info-icon">🏍️</span>
+          <span id="profile-info-title" class="profile-info-title">Kurvig</span>
+        </div>
+        <p id="profile-info-desc" class="profile-info-desc">
+          Kurvenreiche Landstraßen ohne Autobahn. Meidet größere Städte für mehr Fahrspaß (kann länger dauern).
+        </p>
+      </div>
+
+      <!-- Status & Fehlermeldung fuer den Benutzer -->
+      <div id="status-banner" class="status-banner" role="status" aria-live="polite"></div>
+
+      <!-- Wegpunkte-Verwaltung -->
+      <div class="waypoints-box">
+        <div class="waypoints-header">
+          <span class="control-label">Wegpunkte</span>
+          <button type="button" class="btn btn-danger btn-sm" id="btn-clear-route" title="Alle Punkte loeschen">
+            Zuruecksetzen
+          </button>
+        </div>
+
+        <div id="empty-waypoints-hint" class="empty-waypoints-hint">
+          <span class="hint-desktop">Rechtsklick auf die Karte, um Start-, Via- oder Zielpunkte zu setzen.</span>
+          <span class="hint-mobile">Auf die Karte tippen, um Start-, Via- oder Zielpunkte zu setzen.</span>
+        </div>
+
+        <ul id="waypoints-list" class="waypoints-list"></ul>
+      </div>
+
+      <!-- Berechnungs- & Teilen-Knoepfe -->
+      <div class="planer-action-buttons">
+        <button type="button" class="btn btn-secondary" id="btn-calculate" disabled>
+          Route neu berechnen
+        </button>
+        <button type="button" class="btn btn-secondary" id="btn-share-route" disabled>
+          <span>🔗 Route teilen</span>
+        </button>
+      </div>
+
+      <!-- Strecken-Zusammenfassung (Ergebnis) -->
+      <div id="route-summary" class="route-summary-box">
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-label">Distanz</span>
+            <span id="route-distance" class="stat-val">0.0 km</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Fahrzeit ca.</span>
+            <span id="route-duration" class="stat-val">0 Min.</span>
+          </div>
+        </div>
+
+        <!-- GPX Download Knopf -->
+        <button type="button" class="btn btn-primary" id="btn-gpx-download" style="width: 100%; margin-top: 8px;">
+          GPX herunterladen &darr;
+        </button>
+      </div>
+
+      <!-- Footer-Links in der Seitenleiste -->
+      <footer class="planer-sidebar-footer" style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--surface-light); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-dim);">
+        <div style="display: flex; gap: 10px;">
+          <a href="index.html" style="color: var(--text-dim);">Start</a>
+          <a href="datenschutz.html" style="color: var(--text-dim);">Datenschutz</a>
+          <a href="impressum.html" style="color: var(--text-dim);">Impressum</a>
+        </div>
+        <a href="https://www.instagram.com/MotoAlex_Navigation" target="_blank" rel="noopener noreferrer me" class="sidebar-instagram-link" title="MotoAlex auf Instagram (@MotoAlex_Navigation)" aria-label="MotoAlex auf Instagram">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          <span>Instagram</span>
+        </a>
+      </footer>
+
+    </aside>
+
+    <!-- Rechter Bereich: Karte (Randlos, volle Resthoehe & Breite) -->
+    <section class="planer-map-area" aria-label="Interaktive Karte">
+      
+      <!-- Dezent eingeblendeter Fehlerhinweis bei Karten-/Kachel-Ladefehlern -->
+      <div id="map-error-notice" class="map-error-notice" role="alert" aria-live="assertive" style="display: none;">
+        <span class="map-error-icon" aria-hidden="true">⚠️</span>
+        <span class="map-error-text">Die Karte konnte nicht vollständig geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.</span>
+      </div>
+
+      <!-- Beta-Hinweis Popup ueber der Karte -->
+      <div id="beta-info-popup" class="beta-info-popup" role="region" aria-label="Beta-Hinweis">
+        <div class="beta-info-content">
+          <div class="beta-info-header">
+            <span class="beta-info-title">👋 Willkommen in der MotoAlex Beta!</span>
+            <button type="button" id="btn-close-beta-popup" class="beta-popup-close-btn" title="Hinweis schließen" aria-label="Hinweis schließen">&times;</button>
+          </div>
+          <p class="beta-info-text">
+            Die Seite ist zwar noch eine kleine Baustelle, aber frisch auf den ersten eigenen Server umgezogen. Da dort erst 2 CPUs schuften, dauern große Routen einen Moment. ☕
+          </p>
+          <p class="beta-info-text">
+            <strong>Der Planer-Trick:</strong> Setze spätestens alle 100&nbsp;km ein Zwischenziel. Das macht zwar die erste Berechnung nicht schneller, hat aber einen riesigen Vorteil: Wenn du später unterwegs auf dem Handy oder daheim am PC einen Abschnitt änderst, wird nur dieses Teilstück neu berechnet. Das spart massig Ladezeit!
+          </p>
+          <div class="beta-info-actions">
+            <button type="button" id="btn-ack-beta-popup" class="btn btn-secondary btn-xs">Verstanden</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bedienhinweis fuer Karte -->
+      <div id="map-click-hint" class="map-click-hint">
+        <div class="map-hint-text">
+          <span class="hint-desktop">Tipp: Rechtsklick für Menü (Start / Via / Ziel). Punkte mit Linksklick verschieben.</span>
+          <span class="hint-mobile">Tipp: Tippen für Menü (Start / Via / Ziel). Punkte durch langes Drücken verschieben.</span>
+        </div>
+        <button type="button" id="btn-close-map-hint" class="map-hint-close-btn" title="Hinweis ausblenden" aria-label="Hinweis ausblenden">&times;</button>
+      </div>
+
+      <div id="map"></div>
+    </section>
+
+  </main>
+
+  <!-- Modal-Dialog: Route teilen -->
+  <div id="share-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="share-modal-title" class="modal-title">Route teilen</h2>
+        <button type="button" class="modal-close" id="btn-close-share-modal" aria-label="Schließen">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Teile diese geplante Route über die Webadresse oder scanne den QR-Code mit der MotoAlex-App.
+        </p>
+
+        <!-- Link zum Kopieren -->
+        <div class="share-url-group">
+          <label for="share-url-input" class="control-label">Routen-Link</label>
+          <div class="share-input-row">
+            <input type="text" id="share-url-input" class="share-input" readonly value="">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-copy-share-url">
+              Kopieren
+            </button>
+          </div>
+          <span id="share-copy-feedback" class="share-feedback" style="display: none;">Link in die Zwischenablage kopiert!</span>
+        </div>
+
+        <!-- QR-Code Bereich -->
+        <div class="share-qr-container">
+          <div class="control-label">QR-Code zur Route</div>
+          <div class="qr-box-wrapper">
+            <div id="share-qrcode" class="qr-canvas-holder"></div>
+          </div>
+          <div class="share-qr-caption">Mit der Smartphone-Kamera oder der MotoAlex-App scannen.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-close-share-modal-footer">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR-Code Generator Bibliothek ueber CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Zentrale URL-Logik (Erzeugen & Parsen) -->
+  <script src="js/route-url.js"></script>
+
+  <!-- Offline-Städte-, Pass- und Ortsdatenbank -->
+  <script src="data/places.js"></script>
+
+  <!-- Planer JavaScript (Relative Pfadangabe) -->
+  <script src="js/planer.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.motoalex.navigation",
+      "sha256_cert_fingerprints": [
+        "PLATZHALTER_SHA256_FINGERABDRUCK_HIER_EINTRAGEN_BEISPIEL_14:6D:E9:57:3E:68:53:93:B4:72:0D:37:37:37:7B:66:FA:F8:8C:87:6D:90:3A:C1:22:98:BE:26:FA:21:40:7C"
+      ]
+    }
+  }
+]

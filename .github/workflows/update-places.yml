@@ -1,0 +1,158 @@
+name: Update Places Database
+
+on:
+  workflow_dispatch: # Erlaubt dir, das Skript jederzeit manuell per Button zu starten
+  schedule:
+    - cron: '0 4 1 * *' # Läuft jeden 1. des Monats um 04:00 Uhr nachts
+
+permissions:
+  contents: write # Wichtig, damit der Bot die neue places.js ins Repo pushen darf
+
+jobs:
+  update-places:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: osmium & python installieren
+        run: sudo apt-get update && sudo apt-get install -y osmium-tool python3
+
+      - name: Ganz Deutschland OSM laden
+        run: curl -L -o germany.osm.pbf https://download.geofabrik.de/europe/germany-latest.osm.pbf
+
+      - name: Nur Städte und Dörfer filtern
+        # Zieht nur Nodes (n) heraus, die eine Stadt, Kleinstadt oder ein Dorf sind
+        run: |
+          osmium tags-filter germany.osm.pbf n/place=city n/place=town n/place=village -o web-orte.osm.pbf
+          osmium export web-orte.osm.pbf -f geojsonseq -o web-orte.geojsonseq
+
+      - name: Skript bauen und ausführen
+        run: |
+          cat << 'EOF' > update_places.py
+          import json
+          import sys
+
+          # =========================================================
+          # HIER FÜGST DU DEINE FESTEN PÄSSE UND MOTORRAD-TREFFS EIN
+          # Diese bleiben bei jedem Update erhalten!
+          # =========================================================
+          static_places = [
+              ["Stilfser Joch (Passo dello Stelvio)", 46.5286, 10.4531, "pass", "Pass 2757m, Südtirol/Lombardei"],
+              ["Großglockner Hochalpenstraße", 47.0754, 12.8427, "pass", "Pass 2504m, Salzburg/Kärnten"],
+              ["Timmelsjoch (Passo del Rombo)", 46.9056, 11.0978, "pass", "Pass 2474m, Ötztal/Passeiertal"],
+              ["Silvretta-Hochalpenstraße (Bielerhöhe)", 46.9189, 10.0933, "pass", "Pass 2037m, Vorarlberg/Tirol"],
+              ["Hahntennjoch", 47.2883, 10.6508, "pass", "Pass 1894m, Lechtaler Alpen"],
+              ["Kühtaisattel", 47.2083, 11.0189, "pass", "Pass 2017m, Stubaier Alpen"],
+              ["Gerlospass", 47.2433, 12.1389, "pass", "Pass 1531m, Zillertal/Salzburg"],
+              ["Nockalmstraße", 46.9472, 13.7917, "pass", "Passstraße 2042m, Kärnten"],
+              ["Sellajoch (Passo Sella)", 46.5083, 11.7583, "pass", "Pass 2244m, Dolomiten"],
+              ["Pordoijoch (Passo Pordoi)", 46.4883, 11.8125, "pass", "Pass 2239m, Dolomiten"],
+              ["Grödner Joch (Passo Gardena)", 46.5497, 11.8089, "pass", "Pass 2121m, Dolomiten"],
+              ["Campolongopass", 46.5186, 11.8744, "pass", "Pass 1875m, Dolomiten"],
+              ["Gürzner / Jaufenpass (Passo di Monte Giovo)", 46.8397, 11.3197, "pass", "Pass 2094m, Südtirol"],
+              ["Mendelpass (Passo della Mendola)", 46.4172, 11.2056, "pass", "Pass 1362m, Südtirol/Trentino"],
+              ["Gaviapass (Passo di Gavia)", 46.3461, 10.4908, "pass", "Pass 2621m, Lombardei"],
+              ["Berninapass", 46.4106, 10.0264, "pass", "Pass 2328m, Graubünden"],
+              ["Gotthardpass", 46.5558, 8.5678, "pass", "Pass 2106m, Tessin/Uri"],
+              ["Furkapass", 46.5728, 8.4150, "pass", "Pass 2429m, Uri/Wallis"],
+              ["Grimselpass", 46.5614, 8.3375, "pass", "Pass 2164m, Bern/Wallis"],
+              ["Sustenpass", 46.7292, 8.4478, "pass", "Pass 2224m, Bern/Uri"],
+              ["Oberalppass", 46.6583, 8.6711, "pass", "Pass 2044m, Uri/Graubünden"],
+              ["Klausenpass", 46.8683, 8.8556, "pass", "Pass 1948m, Uri/Glarus"],
+              ["Albulapass", 46.5847, 9.8394, "pass", "Pass 2312m, Graubünden"],
+              ["Julierpass", 46.4719, 9.7289, "pass", "Pass 2284m, Graubünden"],
+              ["Flüelapass", 46.7503, 9.9478, "pass", "Pass 2383m, Graubünden"],
+              ["San-Bernardino-Pass", 46.4967, 9.1714, "pass", "Pass 2065m, Graubünden/Tessin"],
+              ["Nufenenpass (Passo della Novena)", 46.4781, 8.3889, "pass", "Pass 2478m, Wallis/Tessin"],
+              ["Torfhaus (Harz)", 51.8058, 10.5369, "poi", "Bikertreff 38667, Harz"],
+              ["Kyffhäuser (36 Kurven)", 51.4136, 11.0772, "poi", "Motorradstrecke 06567, Thüringen"],
+              ["Rursee / Schwammenauel (Eifel)", 50.6381, 6.4422, "poi", "Bikertreff 52396, Eifel"],
+              ["Nürburgring / Nordschleife", 50.3356, 6.9475, "poi", "Motorsport 53520, Eifel"],
+              ["Schauinsland (Schwarzwald)", 47.9122, 7.8967, "poi", "Passstrecke 79254, Schwarzwald"],
+              ["Schwarzwaldhochstraße (B500)", 48.6017, 8.2197, "poi", "Motorradstrecke 77889, Schwarzwald"],
+              ["Kandel (Schwarzwald)", 48.0628, 8.0108, "pass", "Pass 1241m, Schwarzwald"],
+              ["Roßfeld-Panoramastraße", 47.6322, 13.0894, "poi", "Panoramastraße 83471, Berchtesgaden"],
+              ["Sudelfeld / Sudelfeldpass", 47.6789, 12.0369, "pass", "Pass 1123m, Bayerische Alpen"],
+              ["Kesselberg (Kochelsee/Walchensee)", 47.6253, 11.3486, "pass", "Pass 858m, Bayerische Alpen"],
+              ["Wasserkuppe (Rhön)", 50.4978, 9.9378, "poi", "Aussichtsberg 36129, Hessen"],
+              ["Feldberg (Taunus)", 50.2319, 8.4589, "poi", "Bikertreff 61389, Taunus"],
+              ["Kahler Asten (Sauerland)", 51.1797, 8.4897, "poi", "Aussichtsberg 59955, Sauerland"],
+              ["Sorpesee (Sauerland)", 51.3506, 7.9625, "poi", "Bikertreff 59846, Sauerland"],
+              ["Möhnesee", 51.4911, 8.0775, "poi", "Bikertreff 59519, Sauerland"],
+              ["Biggesee", 51.0883, 7.8683, "poi", "Bikertreff 57462, Sauerland"],
+              ["Edersee (Sperrmauer)", 51.1839, 9.0603, "poi", "Bikertreff 34549, Hessen"],
+              ["Johanniskreuz (Pfälzerwald)", 49.3378, 7.8242, "poi", "Bikertreff 67705, Pfälzerwald"],
+              ["Löwensteiner Platte", 49.0967, 9.3878, "poi", "Bikertreff 74245, Baden-Württemberg"],
+              ["Lochenpass (Schwäbische Alb)", 48.2194, 8.8586, "pass", "Pass 885m, Balingen"],
+              ["Große Kalmit (Pfälzerwald)", 49.3183, 8.0833, "poi", "Pass 673m, Maikammer"],
+              ["Schottenring (Vogelsberg)", 50.5014, 9.1231, "poi", "Motorsport 63679, Hessen"],
+              ["Hoherodskopf (Vogelsberg)", 50.5108, 9.2264, "poi", "Bikertreff 63679, Hessen"],
+              ["Wurmberg (Braunlage)", 51.7561, 10.6178, "poi", "Aussichtsberg 38700, Harz"],
+              ["Fichtelberg (Oberwiesenthal)", 50.4286, 12.9542, "poi", "Aussichtsberg 09484, Erzgebirge"],
+          ]
+
+          places = []
+          places.extend(static_places)
+
+          count_osm = 0
+
+          print("Lese OSM Daten...")
+          with open('web-orte.geojsonseq') as f:
+              for zeile in f:
+                  zeile = zeile.strip().lstrip(chr(30))
+                  if not zeile: continue
+                  
+                  try:
+                      feature = json.loads(zeile)
+                      props = feature.get('properties', {})
+                      
+                      name = props.get('name')
+                      if not name: continue
+                      
+                      coords = feature.get('geometry', {}).get('coordinates', [])
+                      if len(coords) < 2: continue
+                      lon, lat = coords[0], coords[1]
+                      
+                      place_type = props.get('place')
+                      typ = "stadt" if place_type in ['city', 'town'] else "gemeinde"
+                      
+                      plz = props.get('postal_code', '')
+                      zusatz = f"{plz}, Deutschland" if plz else "Deutschland"
+
+                      places.append([name, round(lat, 4), round(lon, 4), typ, zusatz])
+                      count_osm += 1
+                  except Exception as e:
+                      continue
+
+          # =========================================================
+          # FEHLERSCHUTZ: Wenn zu wenige Orte gefunden wurden, Abbruch!
+          # =========================================================
+          if count_osm < 1000:
+              print(f"FEHLER: Nur {count_osm} Orte gefunden. Das ist zu wenig! Breche ab.")
+              sys.exit(1)
+
+          print(f"Erfolgreich {count_osm} Orte aus OSM extrahiert.")
+
+          # Schreibe die neue Datei erst als temporäre Datei
+          with open('places_new.js', 'w', encoding='utf-8') as out:
+              out.write('// data/places.js - Automatisch generiert durch GitHub Actions\n')
+              out.write('window.MOTOALEX_PLACES = [\n')
+              for i, p in enumerate(places):
+                  line = f'  {json.dumps(p, ensure_ascii=False)}'
+                  if i < len(places) - 1:
+                      line += ','
+                  out.write(line + '\n')
+              out.write('];\n')
+          EOF
+          
+          python3 update_places.py
+
+      - name: Wenn erfolgreich, alte Datei überschreiben
+        run: mv places_new.js data/places.js
+
+      - name: Änderung automatisch auf GitHub speichern (Commit)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automatisches Update der places.js (Datenbank)"
+          file_pattern: data/places.js
