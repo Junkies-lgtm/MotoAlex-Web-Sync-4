@@ -4,7 +4,7 @@
  */
 
 // Adresse des Kartenstils (eigener Kachelserver)
-const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
+const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json?v=2';
 
 // Begrenzung des Kartenausschnitts und Zoomlevels (Mitteleuropa / Nachbarländer)
 const MAP_MIN_ZOOM = 3;

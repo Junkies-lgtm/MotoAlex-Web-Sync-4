@@ -8,7 +8,7 @@
 // ==========================================================================
 
 // Adresse des Kartenstils (eigener Kachelserver)
-const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
+const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json?v=2';
 
 // Begrenzung des Kartenausschnitts und Zoomlevels (Mitteleuropa / Nachbarländer)
 const MAP_MIN_ZOOM = 3;
@@ -1744,8 +1744,8 @@ function registerTankstellenSourceAndLayers() {
       type: 'geojson',
       data: tankstellenData,
       cluster: true,
-      clusterMaxZoom: 11,
-      clusterRadius: 45
+      clusterMaxZoom: 7,
+      clusterRadius: 50
     });
   }
 
@@ -1800,17 +1800,24 @@ function registerTankstellenSourceAndLayers() {
     }, beforeLayerId);
   }
 
-  // Ebene 3: Einzelne Tankstellen als kleiner Kreis in Orange mit weissem Rand, ab Zoomstufe 10 sichtbar
+  // Ebene 3: Einzelne Tankstellen als kleiner Kreis in Orange mit weissem Rand, ab Zoomstufe 8 sichtbar
   if (!map.getLayer(TANKSTELLEN_POINTS_LAYER_ID)) {
     map.addLayer({
       id: TANKSTELLEN_POINTS_LAYER_ID,
       type: 'circle',
       source: TANKSTELLEN_SOURCE_ID,
       filter: ['!', ['has', 'point_count']],
-      minzoom: 10,
+      minzoom: 8,
       paint: {
         'circle-color': '#ff5500',
-        'circle-radius': 5,
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8, 3,
+          12, 5,
+          15, 7
+        ],
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff'
       }
