@@ -2409,12 +2409,20 @@ function parseRoutingError(status, errorText = '', waypoints = [], segmentIndex 
   const total = totalWaypoints || (waypoints.length || 2);
   const text = (errorText || '').toLowerCase();
 
-  // 1. Berechnungs-Timeout / Server ueberlastet
+  // 1. Spezifische HTTP-Serverfehler
+  if (status === 503) {
+    return 'Zu viele Anfragen auf einmal. Bitte einen Moment warten und erneut berechnen.';
+  }
+
   if (
-    status === 504 || status === 408 || status === 502 || status === 503 || status === 500 ||
+    status === 504 || status === 408 ||
     text.includes('timeout') || text.includes('timed out') || text.includes('time-out')
   ) {
-    return 'Server antwortet nicht: Bitte Teilstrecke kürzen oder erneut versuchen';
+    return 'Die Berechnung dauert zu lange. Setze ein Zwischenziel auf halber Strecke, das teilt die Route in kürzere Abschnitte.';
+  }
+
+  if (status === 502 || status === 500) {
+    return 'Der Routendienst ist gerade nicht erreichbar. Bitte in einigen Minuten erneut versuchen.';
   }
 
   // 2. Sperrbereich / No-Go-Zone
@@ -2515,15 +2523,31 @@ function parseRoutingError(status, errorText = '', waypoints = [], segmentIndex 
     return `Keine Verbindung zwischen ${labelA} und ${labelB} gefunden`;
   }
 
-  // 8. Allgemeines HTTP 400 (Wegpunkt abseits des Straßennetzes)
+  // 8. HTTP 400
   if (status === 400) {
-    if (total === 2 && segmentIndex === 0) {
-      return 'Start oder Ziel liegt abseits befahrbarer Straßen';
+    const hasRoadHint =
+      text.includes('datafile') ||
+      coordMatches.length > 0 ||
+      text.includes('from-position') ||
+      text.includes('from position') ||
+      text.includes('section') ||
+      text.includes('island') ||
+      text.includes('unmapped') ||
+      text.includes('no track found') ||
+      text.includes('no route found');
+
+    if (hasRoadHint) {
+      if (total === 2 && segmentIndex === 0) {
+        return 'Start oder Ziel liegt abseits befahrbarer Straßen';
+      }
+      return 'Wegpunkt liegt abseits befahrbarer Straßen';
     }
-    return 'Wegpunkt liegt abseits befahrbarer Straßen';
+
+    return 'Die Berechnung konnte nicht abgeschlossen werden. Bitte erneut versuchen oder ein Zwischenziel setzen.';
   }
 
-  return 'Server antwortet nicht: Bitte Teilstrecke kürzen oder erneut versuchen';
+  // 9. Allgemeiner Rueckfall fuer nicht erkannte Statuscodes
+  return 'Die Route konnte nicht berechnet werden. Bitte erneut versuchen.';
 }
 
 /**
