@@ -17,6 +17,13 @@ const MAP_MAX_BOUNDS = [[-5.0, 40.0], [25.0, 62.0]];
 // Pfad zur vereinfachten Europa-Hintergrundebene
 const EUROPA_GEOJSON_URL = 'data/europa.geojson';
 
+// Pfad und Bezeichner zur Tankstellen-Kartenebene
+const TANKSTELLEN_GEOJSON_URL = 'data/tankstellen.geojson';
+const TANKSTELLEN_SOURCE_ID = 'tankstellen-source';
+const TANKSTELLEN_CLUSTERS_LAYER_ID = 'tankstellen-clusters';
+const TANKSTELLEN_CLUSTER_COUNT_LAYER_ID = 'tankstellen-cluster-count';
+const TANKSTELLEN_POINTS_LAYER_ID = 'tankstellen-points';
+
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
 
@@ -65,6 +72,13 @@ let domElements = {};
 let activeContextMenu = null;
 let lastContextMenuOpenTimestamp = 0;
 let draggedWaypointIndex = null;
+
+// Tankstellen-Zustand (im Speicher behalten)
+let tankstellenData = null;
+let isTankstellenLoading = false;
+let isTankstellenActive = false;
+let tankstellePopup = null;
+let tankstellenInteractionsSetup = false;
 
 /**
  * Prueft, ob das Geraet ein Touchscreen oder ein mobiles Geraet ist
@@ -214,7 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addressSearchInput: document.getElementById('address-search-input'),
     btnClearSearch: document.getElementById('btn-clear-search'),
     searchResultsDropdown: document.getElementById('search-results-dropdown'),
-    mapErrorNotice: document.getElementById('map-error-notice')
+    mapErrorNotice: document.getElementById('map-error-notice'),
+    btnToggleTankstellen: document.getElementById('btn-toggle-tankstellen')
   };
 
   initMap();
@@ -222,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAddressSearch();
   initBetaPopup();
   initMapHint();
+  initTankstellenControl();
   updateProfileExplanation(state.selectedMode || 'kurvig');
   checkUrlParamsOnLoad();
 });
@@ -1636,6 +1652,312 @@ function clearRouteLayer() {
   if (domElements.routeSummaryBox) {
     domElements.routeSummaryBox.classList.remove('is-visible');
   }
+}
+
+/**
+ * Ermittelt die ID der untersten Routing-Ebene, damit die Tankstellen darunter liegen
+ */
+function getBeforeRouteLayerId() {
+  if (map && map.getLayer('route-casing')) return 'route-casing';
+  if (map && map.getLayer('route-line')) return 'route-line';
+  return undefined;
+}
+
+/**
+ * Richtet Klick- und Hover-Interaktionen fuer die Tankstellen-Ebenen ein
+ */
+function setupTankstellenInteractions() {
+  if (tankstellenInteractionsSetup || !map) return;
+  tankstellenInteractionsSetup = true;
+
+  // Klick auf eine einzelne Tankstelle oeffnet ein kleines Popup
+  map.on('click', TANKSTELLEN_POINTS_LAYER_ID, (e) => {
+    if (!e.features || !e.features.length) return;
+    const feature = e.features[0];
+    const coordinates = feature.geometry.coordinates.slice();
+    const rawBrand = feature.properties && feature.properties.m;
+    const label = (rawBrand !== undefined && rawBrand !== null && String(rawBrand).trim().length > 0)
+      ? String(rawBrand).trim()
+      : 'Tankstelle';
+
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+
+    if (tankstellePopup) {
+      tankstellePopup.remove();
+    }
+
+    tankstellePopup = new maplibregl.Popup({
+      offset: 8,
+      closeButton: true,
+      closeOnClick: true,
+      className: 'tankstelle-popup'
+    })
+      .setLngLat(coordinates)
+      .setText(label)
+      .addTo(map);
+  });
+
+  // Cursor-Wechsel fuer einzelne Tankstellen
+  map.on('mouseenter', TANKSTELLEN_POINTS_LAYER_ID, () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  map.on('mouseleave', TANKSTELLEN_POINTS_LAYER_ID, () => {
+    map.getCanvas().style.cursor = '';
+  });
+
+  // Klick auf Haeufungspunkt (Cluster): hineinzoomen
+  map.on('click', TANKSTELLEN_CLUSTERS_LAYER_ID, (e) => {
+    const features = map.queryRenderedFeatures(e.point, { layers: [TANKSTELLEN_CLUSTERS_LAYER_ID] });
+    if (!features || !features.length) return;
+    const clusterId = features[0].properties.cluster_id;
+    const source = map.getSource(TANKSTELLEN_SOURCE_ID);
+    if (source && source.getClusterExpansionZoom) {
+      source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+        if (err) return;
+        map.easeTo({
+          center: features[0].geometry.coordinates,
+          zoom: zoom
+        });
+      });
+    }
+  });
+
+  // Cursor-Wechsel fuer Cluster
+  map.on('mouseenter', TANKSTELLEN_CLUSTERS_LAYER_ID, () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  map.on('mouseleave', TANKSTELLEN_CLUSTERS_LAYER_ID, () => {
+    map.getCanvas().style.cursor = '';
+  });
+}
+
+/**
+ * Registriert die Tankstellen-Quelle und die drei Ebenen in MapLibre
+ */
+function registerTankstellenSourceAndLayers() {
+  if (!map) return;
+
+  if (!map.getSource(TANKSTELLEN_SOURCE_ID)) {
+    map.addSource(TANKSTELLEN_SOURCE_ID, {
+      type: 'geojson',
+      data: tankstellenData,
+      cluster: true,
+      clusterMaxZoom: 11,
+      clusterRadius: 45
+    });
+  }
+
+  const beforeLayerId = getBeforeRouteLayerId();
+
+  // Ebene 1: Haeufungspunkte mit Kreis
+  if (!map.getLayer(TANKSTELLEN_CLUSTERS_LAYER_ID)) {
+    map.addLayer({
+      id: TANKSTELLEN_CLUSTERS_LAYER_ID,
+      type: 'circle',
+      source: TANKSTELLEN_SOURCE_ID,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          '#ff5500',
+          15,
+          '#ea580c',
+          50,
+          '#c2410c'
+        ],
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          16,
+          15,
+          20,
+          50,
+          25
+        ],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff'
+      }
+    }, beforeLayerId);
+  }
+
+  // Ebene 2: Anzahl als Text auf den Haeufungspunkten
+  if (!map.getLayer(TANKSTELLEN_CLUSTER_COUNT_LAYER_ID)) {
+    map.addLayer({
+      id: TANKSTELLEN_CLUSTER_COUNT_LAYER_ID,
+      type: 'symbol',
+      source: TANKSTELLEN_SOURCE_ID,
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 12
+      },
+      paint: {
+        'text-color': '#ffffff'
+      }
+    }, beforeLayerId);
+  }
+
+  // Ebene 3: Einzelne Tankstellen als kleiner Kreis in Orange mit weissem Rand, ab Zoomstufe 10 sichtbar
+  if (!map.getLayer(TANKSTELLEN_POINTS_LAYER_ID)) {
+    map.addLayer({
+      id: TANKSTELLEN_POINTS_LAYER_ID,
+      type: 'circle',
+      source: TANKSTELLEN_SOURCE_ID,
+      filter: ['!', ['has', 'point_count']],
+      minzoom: 10,
+      paint: {
+        'circle-color': '#ff5500',
+        'circle-radius': 5,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff'
+      }
+    }, beforeLayerId);
+  }
+
+  setupTankstellenInteractions();
+}
+
+/**
+ * Schaltet die Sichtbarkeit aller drei Tankstellen-Ebenen um
+ */
+function setTankstellenLayersVisibility(visibility) {
+  if (!map) return;
+  [TANKSTELLEN_CLUSTERS_LAYER_ID, TANKSTELLEN_CLUSTER_COUNT_LAYER_ID, TANKSTELLEN_POINTS_LAYER_ID].forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', visibility);
+    }
+  });
+}
+
+/**
+ * Aktualisiert das Erscheinungsbild des Tankstellen-Schalters
+ */
+function updateTankstellenButtonUI(isActive, isLoading) {
+  const btn = domElements.btnToggleTankstellen || document.getElementById('btn-toggle-tankstellen');
+  if (!btn) return;
+
+  if (isLoading) {
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.setAttribute('title', 'Tankstellen werden geladen...');
+    btn.setAttribute('aria-label', 'Tankstellen werden geladen...');
+  } else {
+    btn.classList.remove('is-loading');
+    btn.removeAttribute('aria-busy');
+  }
+
+  if (isActive) {
+    btn.classList.add('is-active');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.setAttribute('title', 'Tankstellen ausblenden');
+    btn.setAttribute('aria-label', 'Tankstellen ausblenden');
+  } else {
+    btn.classList.remove('is-active');
+    btn.setAttribute('aria-pressed', 'false');
+    btn.setAttribute('title', 'Tankstellen anzeigen');
+    btn.setAttribute('aria-label', 'Tankstellen anzeigen');
+  }
+}
+
+/**
+ * Schaltet die Tankstellen-Ebene ein oder aus
+ */
+async function toggleTankstellen() {
+  if (isTankstellenLoading) return;
+
+  if (isTankstellenActive) {
+    // Ausschalten blendet die Ebenen aus, ohne die geladenen Daten zu verwerfen
+    setTankstellenLayersVisibility('none');
+    isTankstellenActive = false;
+    updateTankstellenButtonUI(false, false);
+    if (tankstellePopup) {
+      tankstellePopup.remove();
+      tankstellePopup = null;
+    }
+  } else {
+    // Einschalten: Pruefen, ob die Karte bereit ist
+    if (!map || !map.isStyleLoaded()) {
+      if (map) {
+        map.once('load', () => toggleTankstellen());
+      }
+      return;
+    }
+
+    if (!tankstellenData) {
+      // Beim ersten Einschalten wird data/tankstellen.geojson per fetch geladen
+      isTankstellenLoading = true;
+      updateTankstellenButtonUI(false, true);
+
+      try {
+        const response = await fetch(TANKSTELLEN_GEOJSON_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} beim Laden von ${TANKSTELLEN_GEOJSON_URL}`);
+        }
+        tankstellenData = await response.json();
+
+        // Als MapLibre-Quelle und drei Ebenen registrieren
+        registerTankstellenSourceAndLayers();
+        setTankstellenLayersVisibility('visible');
+        isTankstellenActive = true;
+        updateTankstellenButtonUI(true, false);
+      } catch (err) {
+        console.error('Fehler beim Laden von data/tankstellen.geojson:', err);
+        isTankstellenActive = false;
+        updateTankstellenButtonUI(false, false);
+      } finally {
+        isTankstellenLoading = false;
+      }
+    } else {
+      // Bereits geladen: im Speicher behalten, Quelle registrieren falls noetig und sichtbar schalten
+      if (!map.getSource(TANKSTELLEN_SOURCE_ID)) {
+        registerTankstellenSourceAndLayers();
+      }
+      setTankstellenLayersVisibility('visible');
+      isTankstellenActive = true;
+      updateTankstellenButtonUI(true, false);
+    }
+  }
+}
+
+/**
+ * Initialisiert den Schalter fuer die Tankstellen-Ebene
+ */
+function initTankstellenControl() {
+  let btn = domElements.btnToggleTankstellen || document.getElementById('btn-toggle-tankstellen');
+  if (!btn) {
+    const mapArea = document.querySelector('.planer-map-area') || document.getElementById('map');
+    if (!mapArea) return;
+
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'btn-toggle-tankstellen';
+    btn.className = 'map-ctrl-btn btn-toggle-tankstellen';
+    btn.title = 'Tankstellen anzeigen';
+    btn.setAttribute('aria-label', 'Tankstellen anzeigen');
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = `
+      <span class="tankstellen-btn-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" x2="15" y1="22" y2="22"/>
+          <line x1="4" x2="14" y1="9" y2="9"/>
+          <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
+          <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>
+        </svg>
+      </span>
+      <span class="tankstellen-btn-spinner" aria-hidden="true"></span>
+      <span class="tankstellen-btn-label">Tankstellen</span>
+    `;
+    mapArea.appendChild(btn);
+    domElements.btnToggleTankstellen = btn;
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleTankstellen();
+  });
 }
 
 /**

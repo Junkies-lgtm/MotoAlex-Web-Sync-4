@@ -1,0 +1,1500 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.405,
+          52.52
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.388,
+          52.516
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.43,
+          52.49
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.31,
+          52.5
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.45,
+          52.55
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.25,
+          52.48
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.5,
+          52.45
+        ]
+      },
+      "properties": {
+        "m": "HEM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.35,
+          52.58
+        ]
+      },
+      "properties": {
+        "m": "Star"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.2,
+          52.52
+        ]
+      },
+      "properties": {
+        "m": "Avia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.41,
+          52.535
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.37,
+          52.47
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.46,
+          52.51
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.993,
+          53.551
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.01,
+          53.57
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.95,
+          53.53
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.08,
+          53.52
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.92,
+          53.58
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.05,
+          53.6
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.12,
+          53.54
+        ]
+      },
+      "properties": {
+        "m": "Star"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.88,
+          53.56
+        ]
+      },
+      "properties": {
+        "m": "HEM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.02,
+          53.59
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.582,
+          48.135
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.55,
+          48.15
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.6,
+          48.18
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.52,
+          48.11
+        ]
+      },
+      "properties": {
+        "m": "Agip"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.63,
+          48.12
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5,
+          48.17
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.65,
+          48.2
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.45,
+          48.14
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.57,
+          48.19
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.62,
+          48.16
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.49,
+          48.12
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.96,
+          50.937
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.93,
+          50.95
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.98,
+          50.91
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.01,
+          50.97
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.89,
+          50.93
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.1,
+          50.73
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.08,
+          50.71
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.78,
+          51.22
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.81,
+          51.25
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.01,
+          51.45
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.46,
+          51.51
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.21,
+          51.48
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.92,
+          51.43
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.15,
+          51.26
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.09,
+          50.88
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.682,
+          50.11
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.65,
+          50.13
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.72,
+          50.08
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6,
+          50.05
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.75,
+          50.15
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.55,
+          50.12
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.69,
+          50.02
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.48,
+          50.08
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.63,
+          50.18
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.182,
+          48.775
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.15,
+          48.75
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.22,
+          48.8
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.12,
+          48.82
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5,
+          48.5
+        ]
+      },
+      "properties": {
+        "m": "Avia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2,
+          48.2
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.35,
+          48.05
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.85,
+          47.99
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8,
+          48.4
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.18,
+          48.65
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4,
+          48.8
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.25,
+          48.71
+        ]
+      },
+      "properties": {
+        "m": "Esso"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.94,
+          50.33
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.88,
+          50.36
+        ]
+      },
+      "properties": {
+        "m": "ED"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.05,
+          50.25
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.75,
+          50.45
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.6,
+          50.2
+        ]
+      },
+      "properties": {
+        "m": "Avia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.95,
+          50.38
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.55,
+          51.8
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.42,
+          51.75
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.65,
+          51.7
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.35,
+          51.65
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.75,
+          51.85
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.51,
+          51.73
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.09,
+          47.49
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.12,
+          47.51
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.31,
+          47.4
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7,
+          47.56
+        ]
+      },
+      "properties": {
+        "m": "Agip"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2,
+          47.72
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.15,
+          47.6
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.85,
+          47.62
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.35,
+          47.65
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.03,
+          50.98
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11,
+          50.95
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7,
+          50.68
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.37,
+          51.34
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4,
+          51.32
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.32,
+          51.37
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.73,
+          51.05
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.76,
+          51.03
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.7,
+          51.07
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.076,
+          49.452
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.05,
+          49.43
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.11,
+          49.47
+        ]
+      },
+      "properties": {
+        "m": "OMV"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.98,
+          49.44
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.88,
+          49.89
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.15,
+          49.78
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.732,
+          52.375
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.76,
+          52.39
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7,
+          52.35
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.801,
+          53.079
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.78,
+          53.05
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.85,
+          53.1
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.68,
+          53.86
+        ]
+      },
+      "properties": {
+        "m": "Aral"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7,
+          53.89
+        ]
+      },
+      "properties": {
+        "m": "Shell"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.13,
+          54.32
+        ]
+      },
+      "properties": {
+        "m": "JET"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.41,
+          53.63
+        ]
+      },
+      "properties": {
+        "m": "Star"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.13,
+          54.09
+        ]
+      },
+      "properties": {
+        "m": "TotalEnergies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.1,
+          54.07
+        ]
+      },
+      "properties": {
+        "m": ""
+      }
+    }
+  ]
+}

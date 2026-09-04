@@ -2125,6 +2125,137 @@ p {
   }
 }
 
+/* ==========================================================================
+   Tankstellen-Kartenebene: Schalter / Knopf & Popup
+   ========================================================================== */
+.btn-toggle-tankstellen {
+  position: absolute;
+  top: 10px;
+  right: 52px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  height: 36px;
+  background-color: var(--surface);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.btn-toggle-tankstellen:hover {
+  background-color: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--surface-light);
+}
+
+/* Aktiver Zustand (Ebene eingeschaltet) */
+.btn-toggle-tankstellen.is-active {
+  background-color: rgba(255, 85, 0, 0.18);
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 14px rgba(255, 85, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.btn-toggle-tankstellen.is-active:hover {
+  background-color: rgba(255, 85, 0, 0.26);
+  color: #ffffff;
+}
+
+.btn-toggle-tankstellen .tankstellen-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.btn-toggle-tankstellen.is-active .tankstellen-btn-icon {
+  color: var(--accent);
+}
+
+.btn-toggle-tankstellen .tankstellen-btn-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: tankstellen-btn-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Wartezustand während des Datenabrufs */
+.btn-toggle-tankstellen.is-loading {
+  cursor: wait;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.btn-toggle-tankstellen.is-loading .tankstellen-btn-icon {
+  display: none;
+}
+
+.btn-toggle-tankstellen.is-loading .tankstellen-btn-spinner {
+  display: inline-block;
+}
+
+@keyframes tankstellen-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .btn-toggle-tankstellen {
+    padding: 0 9px;
+    height: 34px;
+    font-size: 12px;
+    right: 50px;
+    top: 9px;
+  }
+}
+
+/* Kleines Popup für einzelne Tankstellen */
+.tankstelle-popup .maplibregl-popup-content {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  line-height: 1.4;
+}
+
+.tankstelle-popup .maplibregl-popup-tip {
+  border-top-color: var(--surface);
+}
+
+.tankstelle-popup .maplibregl-popup-close-button {
+  color: var(--text-dim);
+  font-size: 15px;
+  padding: 2px 6px;
+  right: 2px;
+  top: 2px;
+}
+
+.tankstelle-popup .maplibregl-popup-close-button:hover {
+  color: var(--text);
+  background: transparent;
+}
+
 /* MapLibre Marker Anpassungen */
 .map-marker-container {
   display: flex;
