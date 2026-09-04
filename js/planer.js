@@ -1744,7 +1744,7 @@ function registerTankstellenSourceAndLayers() {
       type: 'geojson',
       data: tankstellenData,
       cluster: true,
-      clusterMaxZoom: 7,
+      clusterMaxZoom: 8,
       clusterRadius: 50
     });
   }
@@ -1800,21 +1800,21 @@ function registerTankstellenSourceAndLayers() {
     }, beforeLayerId);
   }
 
-  // Ebene 3: Einzelne Tankstellen als kleiner Kreis in Orange mit weissem Rand, ab Zoomstufe 8 sichtbar
+  // Ebene 3: Einzelne Tankstellen als kleiner Kreis in Orange mit weissem Rand, ab Zoomstufe 9 sichtbar
   if (!map.getLayer(TANKSTELLEN_POINTS_LAYER_ID)) {
     map.addLayer({
       id: TANKSTELLEN_POINTS_LAYER_ID,
       type: 'circle',
       source: TANKSTELLEN_SOURCE_ID,
       filter: ['!', ['has', 'point_count']],
-      minzoom: 8,
+      minzoom: 9,
       paint: {
         'circle-color': '#ff5500',
         'circle-radius': [
           'interpolate',
           ['linear'],
           ['zoom'],
-          8, 3,
+          9, 3,
           12, 5,
           15, 7
         ],
@@ -1955,7 +1955,6 @@ function initTankstellenControl() {
         </svg>
       </span>
       <span class="tankstellen-btn-spinner" aria-hidden="true"></span>
-      <span class="tankstellen-btn-label">Tankstellen</span>
     `;
     mapArea.appendChild(btn);
     domElements.btnToggleTankstellen = btn;
