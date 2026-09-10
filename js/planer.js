@@ -60,6 +60,7 @@ const MODE_PARAMETERS = {
 const state = {
   waypoints: [], // Array von { lng: number, lat: number, marker: MarkerInstance }
   segmentModes: [], // Array von String-Modi je Abschnitt (Länge = waypoints.length - 1)
+  segmentStats: [], // Array von { distance: number, time: number, cumDistance: number, cumTime: number } je Segment
   currentRouteGeoJSON: null,
   currentRouteProperties: null,
   selectedMode: 'kurvig', // Standardprofil: 'kurvig' ('schnellste', 'schnell', 'kurvig', 'extra_kurvig')
@@ -836,6 +837,37 @@ function hideSearchResults() {
 // ==========================================================================
 
 /**
+ * Schließt alle aktuell geöffneten Teilstück-Popups der Wegpunkte
+ */
+function closeAllSegmentPopups() {
+  state.waypoints.forEach(wp => {
+    if (wp.segmentPopup) {
+      wp.segmentPopup.remove();
+      wp.segmentPopup = null;
+    }
+  });
+}
+
+/**
+ * Formatiert Strecken- und Zeitwerte analog zu displayRouteSummary
+ */
+function formatRouteStats(lengthMeters, timeSeconds) {
+  const lengthKm = (lengthMeters / 1000).toFixed(1).replace('.', ',');
+  const totalMinutes = Math.round(timeSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  let timeString = '';
+  if (hours > 0) {
+    timeString = `${hours} Std. ${minutes} Min.`;
+  } else {
+    timeString = `${minutes} Min.`;
+  }
+
+  return `${lengthKm} km · ${timeString}`;
+}
+
+/**
  * Erstellt ein neues Wegpunkt-Objekt inklusive verschiebbarem Kartenmarker
  */
 function createWaypointObject(lng, lat) {
@@ -857,13 +889,15 @@ function createWaypointObject(lng, lat) {
   const waypointObj = {
     lng,
     lat,
-    marker
+    marker,
+    segmentPopup: null
   };
 
   // Touch Long-Press Erkennung fuer mobile Geraete
   let touchStartPos = { x: 0, y: 0 };
   let isLongPressActive = false;
   let longPressTimer = null;
+  let wasDragged = false;
 
   container.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
@@ -902,7 +936,57 @@ function createWaypointObject(lng, lat) {
   container.addEventListener('touchend', clearTouchState, { passive: true });
   container.addEventListener('touchcancel', clearTouchState, { passive: true });
 
+  // Klick-Listener auf dem Marker: Teilstueck-Popup oeffnen oder schliessen
+  container.addEventListener('click', (e) => {
+    if (wasDragged || isLongPressActive) {
+      return;
+    }
+
+    const index = state.waypoints.indexOf(waypointObj);
+    // Regeln: fuer den Startpunkt (Index 0) wird kein Popup geoeffnet
+    if (index <= 0) return;
+
+    // Ein erneuter Klick auf denselben Wegpunkt schliesst sein Popup wieder
+    if (waypointObj.segmentPopup) {
+      waypointObj.segmentPopup.remove();
+      waypointObj.segmentPopup = null;
+      return;
+    }
+
+    // Liegen fuer den Wegpunkt noch keine Werte vor, weil noch keine Route berechnet wurde, wird kein Popup geoeffnet
+    const segIndex = index - 1;
+    if (!state.segmentStats || !state.segmentStats[segIndex]) {
+      return;
+    }
+
+    const stat = state.segmentStats[segIndex];
+    const segmentText = formatRouteStats(stat.distance, stat.time);
+    const cumulativeText = `gesamt ${formatRouteStats(stat.cumDistance, stat.cumTime)}`;
+
+    const popupHtml = `<div class="teilstueck-popup-segment">${escapeHtml(segmentText)}</div><div class="teilstueck-popup-cumulative">${escapeHtml(cumulativeText)}</div>`;
+
+    const popup = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: false,
+      offset: 12,
+      className: 'teilstueck-popup'
+    })
+      .setLngLat([waypointObj.lng, waypointObj.lat])
+      .setHTML(popupHtml)
+      .addTo(map);
+
+    waypointObj.segmentPopup = popup;
+
+    popup.on('close', () => {
+      if (waypointObj.segmentPopup === popup) {
+        waypointObj.segmentPopup = null;
+      }
+    });
+  });
+
   marker.on('dragstart', () => {
+    wasDragged = true;
+    closeAllSegmentPopups();
     closeContextMenu();
     container.classList.add('marker-is-dragging');
   });
@@ -910,6 +994,9 @@ function createWaypointObject(lng, lat) {
   // Marker verschiebbar mit Linksklick oder Touch-Drag
   marker.on('dragend', () => {
     clearTouchState();
+    setTimeout(() => {
+      wasDragged = false;
+    }, 100);
     const newLngLat = marker.getLngLat();
     waypointObj.lng = newLngLat.lng;
     waypointObj.lat = newLngLat.lat;
@@ -1023,6 +1110,10 @@ function moveWaypoint(fromIndex, toIndex) {
 function removeWaypoint(index) {
   if (index < 0 || index >= state.waypoints.length) return;
 
+  if (state.waypoints[index].segmentPopup) {
+    state.waypoints[index].segmentPopup.remove();
+    state.waypoints[index].segmentPopup = null;
+  }
   state.waypoints[index].marker.remove();
   state.waypoints.splice(index, 1);
   if (state.segmentModes.length > 0) {
@@ -1037,6 +1128,8 @@ function removeWaypoint(index) {
   if (state.waypoints.length >= 2) {
     calculateRoute();
   } else {
+    closeAllSegmentPopups();
+    state.segmentStats = [];
     cancelRunningCalculation();
     clearRouteLayer();
     hideStatus();
@@ -1477,10 +1570,18 @@ function renderWaypointsList() {
  */
 function clearAllWaypointsAndRoute() {
   cancelRunningCalculation();
+  closeAllSegmentPopups();
   closeContextMenu();
-  state.waypoints.forEach(wp => wp.marker.remove());
+  state.waypoints.forEach(wp => {
+    if (wp.segmentPopup) {
+      wp.segmentPopup.remove();
+      wp.segmentPopup = null;
+    }
+    wp.marker.remove();
+  });
   state.waypoints = [];
   state.segmentModes = [];
+  state.segmentStats = [];
   state.currentRouteGeoJSON = null;
   state.currentRouteProperties = null;
 
@@ -2604,7 +2705,9 @@ async function fetchSegmentRoute(wpA, wpB, modeKey, signal = null, segmentIndex 
  * Messung (performance.now nur für neu abgerufene Segmente), Schätzung und lernender Restzeitanzeige.
  */
 async function calculateRoute() {
+  closeAllSegmentPopups();
   if (state.waypoints.length < 2) {
+    state.segmentStats = [];
     cancelRunningCalculation();
     showStatus('Bitte setze mindestens 2 Punkte auf der Karte (Start und Ziel).', 'error');
     return;
@@ -2700,6 +2803,7 @@ async function calculateRoute() {
     const allCoordinates = [];
     let totalLengthMeters = 0;
     let totalTimeSeconds = 0;
+    const newSegmentStats = [];
 
     segmentResults.forEach((segData, idx) => {
       const feat = segData.features[0];
@@ -2711,9 +2815,21 @@ async function calculateRoute() {
       }
 
       const props = feat.properties || {};
-      totalLengthMeters += parseFloat(props['track-length'] || 0);
-      totalTimeSeconds += parseFloat(props['total-time'] || 0);
+      const segLengthMeters = parseFloat(props['track-length'] || 0);
+      const segTimeSeconds = parseFloat(props['total-time'] || 0);
+
+      totalLengthMeters += segLengthMeters;
+      totalTimeSeconds += segTimeSeconds;
+
+      newSegmentStats.push({
+        distance: segLengthMeters,
+        time: segTimeSeconds,
+        cumDistance: totalLengthMeters,
+        cumTime: totalTimeSeconds
+      });
     });
+
+    state.segmentStats = newSegmentStats;
 
     const combinedGeoJSON = {
       type: 'FeatureCollection',

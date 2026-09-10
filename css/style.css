@@ -2257,6 +2257,65 @@ p {
   background: transparent;
 }
 
+/* Kleines Teilstück-Popup für Wegpunkte  */
+.teilstueck-popup .maplibregl-popup-content {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 22px 6px 10px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.teilstueck-popup .maplibregl-popup-tip {
+  border-top-color: var(--surface);
+}
+
+.teilstueck-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--surface);
+}
+
+.teilstueck-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--surface);
+}
+
+.teilstueck-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--surface);
+}
+
+.teilstueck-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--surface);
+}
+
+.teilstueck-popup .maplibregl-popup-close-button {
+  color: var(--text-dim);
+  font-size: 15px;
+  padding: 2px 6px;
+  right: 2px;
+  top: 2px;
+}
+
+.teilstueck-popup .maplibregl-popup-close-button:hover {
+  color: var(--text);
+  background: transparent;
+}
+
+.teilstueck-popup-segment {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+.teilstueck-popup-cumulative {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
 /* MapLibre Marker Anpassungen */
 .map-marker-container {
   display: flex;
