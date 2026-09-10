@@ -52,6 +52,21 @@ const MODE_LABELS = {
 
 let mapInstance = null;
 
+/**
+ * Zeigt einen sichtbaren Fehlerhinweis im Route-Viewer an
+ */
+function showRouteErrorNotice(message) {
+  const errorContainer = document.getElementById('route-error-container');
+  const successContainer = document.getElementById('route-success-container');
+  if (errorContainer) errorContainer.style.display = 'block';
+  if (successContainer) successContainer.style.display = 'none';
+
+  const detailsEl = document.getElementById('error-details');
+  if (detailsEl && message) {
+    detailsEl.innerText = message;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initRouteViewer();
 });
@@ -296,6 +311,15 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
     mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapInstance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
+    mapInstance.on('error', (e) => {
+      const is403 = (e && e.error && (e.error.status === 403 || e.error.statusCode === 403)) ||
+                    (e && e.status === 403) ||
+                    (e && e.error && typeof e.error.message === 'string' && e.error.message.includes('403'));
+      if (is403) {
+        showRouteErrorNotice('Dieser Dienst ist derzeit nur aus Europa erreichbar.');
+      }
+    });
+
     mapInstance.on('load', () => {
       // Schemenhafte Europa-Ebene als Fallback unter allen Kacheln laden
       setupEuropaBackgroundLayer(mapInstance);
@@ -387,6 +411,10 @@ async function fetchAndDrawRoute(waypoints, segmentModesOrMode) {
 
       const url = buildBRouterUrl(waypoints, PROFILE_ID, modeParams);
       const res = await fetch(url);
+      if (res.status === 403) {
+        showRouteErrorNotice('Dieser Dienst ist derzeit nur aus Europa erreichbar.');
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.features && data.features.length > 0) {
@@ -406,6 +434,10 @@ async function fetchAndDrawRoute(waypoints, segmentModesOrMode) {
 
         const url = buildBRouterUrl([wpA, wpB], PROFILE_ID, modeParams);
         const res = await fetch(url);
+        if (res.status === 403) {
+          showRouteErrorNotice('Dieser Dienst ist derzeit nur aus Europa erreichbar.');
+          return;
+        }
         if (res.ok) {
           const d = await res.json();
           if (d.features && d.features.length > 0) {

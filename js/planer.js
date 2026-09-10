@@ -358,14 +358,29 @@ function initMap() {
 
       console.error(`Kartenfehler: ${errorText} | Adresse: ${errorUrl}`, e);
 
-      showMapErrorBanner();
+      const is403 = (e && e.error && (e.error.status === 403 || e.error.statusCode === 403)) ||
+                    (e && e.status === 403) ||
+                    (e && e.error && typeof e.error.message === 'string' && e.error.message.includes('403'));
 
-      if (e && e.error && (e.error.status === 401 || e.error.status === 403 || e.error.status === 404)) {
-        showMapNotice(
-          'Fehler beim Laden des Kartenstils',
-          `Der Kartendienst konnte nicht geladen werden (HTTP ${e.error.status || 'Fehler'}). Bitte überprüfe den hinterlegten API-Schlüssel in js/planer.js.`,
-          true
-        );
+      if (is403) {
+        const noticeEl = domElements.mapErrorNotice || document.getElementById('map-error-notice');
+        if (noticeEl) {
+          const textEl = noticeEl.querySelector('.map-error-text');
+          if (textEl) {
+            textEl.textContent = 'Die Karte ist derzeit nur aus Europa erreichbar.';
+          }
+          noticeEl.style.display = 'flex';
+        }
+      } else {
+        showMapErrorBanner();
+
+        if (e && e.error && (e.error.status === 401 || e.error.status === 404)) {
+          showMapNotice(
+            'Fehler beim Laden des Kartenstils',
+            `Der Kartendienst konnte nicht geladen werden (HTTP ${e.error.status || 'Fehler'}). Bitte überprüfe den hinterlegten API-Schlüssel in js/planer.js.`,
+            true
+          );
+        }
       }
     });
 
@@ -2511,6 +2526,10 @@ function parseRoutingError(status, errorText = '', waypoints = [], segmentIndex 
   const text = (errorText || '').toLowerCase();
 
   // 1. Spezifische HTTP-Serverfehler
+  if (status === 403) {
+    return 'Dieser Dienst ist derzeit nur aus Europa erreichbar.';
+  }
+
   if (status === 503) {
     return 'Zu viele Anfragen auf einmal. Bitte einen Moment warten und erneut berechnen.';
   }
