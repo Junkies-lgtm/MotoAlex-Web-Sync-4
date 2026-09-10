@@ -1165,12 +1165,15 @@ function updateMarkerLabels() {
     if (idx === 0) {
       pin.classList.add('marker-start');
       pin.innerText = 'Start';
+      pin.removeAttribute('title');
     } else if (idx === total - 1 && total > 1) {
       pin.classList.add('marker-end');
       pin.innerText = 'Ziel';
+      pin.setAttribute('title', 'Teilstück anzeigen');
     } else {
       pin.classList.add('marker-via');
       pin.innerText = String(idx);
+      pin.setAttribute('title', 'Teilstück anzeigen');
     }
   });
 }
