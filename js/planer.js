@@ -24,6 +24,12 @@ const TANKSTELLEN_CLUSTERS_LAYER_ID = 'tankstellen-clusters';
 const TANKSTELLEN_CLUSTER_COUNT_LAYER_ID = 'tankstellen-cluster-count';
 const TANKSTELLEN_POINTS_LAYER_ID = 'tankstellen-points';
 
+// Pfad und Bezeichner zur Baustellen- & Sperrungs-Kartenebene (Brandenburg)
+const BAUSTELLEN_GEOJSON_URL = 'data/baustellen.geojson';
+const BAUSTELLEN_SOURCE_ID = 'baustellen-source';
+const BAUSTELLEN_SPERRUNGEN_LAYER_ID = 'baustellen-sperrungen';
+const BAUSTELLEN_BAUABSCHNITTE_LAYER_ID = 'baustellen-bauabschnitte';
+
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
 
@@ -80,6 +86,13 @@ let isTankstellenLoading = false;
 let isTankstellenActive = false;
 let tankstellePopup = null;
 let tankstellenInteractionsSetup = false;
+
+// Baustellen- & Sperrungs-Zustand (im Speicher behalten)
+let baustellenData = null;
+let isBaustellenLoading = false;
+let isBaustellenActive = false;
+let baustellePopup = null;
+let baustellenInteractionsSetup = false;
 
 /**
  * Prueft, ob das Geraet ein Touchscreen oder ein mobiles Geraet ist
@@ -230,7 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClearSearch: document.getElementById('btn-clear-search'),
     searchResultsDropdown: document.getElementById('search-results-dropdown'),
     mapErrorNotice: document.getElementById('map-error-notice'),
-    btnToggleTankstellen: document.getElementById('btn-toggle-tankstellen')
+    btnToggleTankstellen: document.getElementById('btn-toggle-tankstellen'),
+    btnToggleBaustellen: document.getElementById('btn-toggle-baustellen')
   };
 
   initMap();
@@ -239,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBetaPopup();
   initMapHint();
   initTankstellenControl();
+  initBaustellenControl();
   updateProfileExplanation(state.selectedMode || 'kurvig');
   checkUrlParamsOnLoad();
 });
@@ -2088,6 +2103,313 @@ function initTankstellenControl() {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleTankstellen();
+  });
+}
+
+/**
+ * Formatiert ein ISO-Datum (JJJJ-MM-TT) in deutsches Format (TT.MM.JJJJ)
+ */
+function formatGermanDate(isoDateStr) {
+  if (!isoDateStr) return '';
+  const parts = String(isoDateStr).trim().split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
+  }
+  return String(isoDateStr);
+}
+
+/**
+ * Richtet Klick- und Hover-Interaktionen fuer die Baustellen- und Sperrungsebenen ein
+ */
+function setupBaustellenInteractions() {
+  if (baustellenInteractionsSetup || !map) return;
+  baustellenInteractionsSetup = true;
+
+  const layerIds = [BAUSTELLEN_SPERRUNGEN_LAYER_ID, BAUSTELLEN_BAUABSCHNITTE_LAYER_ID];
+
+  layerIds.forEach((layerId) => {
+    // Cursor-Wechsel beim Überfahren der Linien
+    map.on('mouseenter', layerId, () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', layerId, () => {
+      map.getCanvas().style.cursor = '';
+    });
+
+    // Klick auf eine Baustelle öffnet ein maplibregl.Popup an der Klickstelle
+    map.on('click', layerId, (e) => {
+      if (!e.features || !e.features.length) return;
+      const feature = e.features[0];
+      const props = feature.properties || {};
+
+      const street = escapeHtml((props.s || '').trim());
+      const location = escapeHtml((props.o || '').trim());
+      const isSperrung = Number(props.sp) === 1;
+
+      // Erste Zeile: Straßennummer und Ortsangabe
+      let firstLine = '';
+      if (street && location) {
+        firstLine = `${street} &ndash; ${location}`;
+      } else {
+        firstLine = street || location || 'Baustelle';
+      }
+
+      // Zweite Zeile: Zeitraum im Format "07.09.2026 bis 11.09.2026"
+      const vonFormatted = formatGermanDate(props.von);
+      const bisFormatted = formatGermanDate(props.bis);
+      let zeitraumText = '';
+      if (vonFormatted && bisFormatted) {
+        zeitraumText = `${vonFormatted} bis ${bisFormatted}`;
+      } else if (vonFormatted) {
+        zeitraumText = `ab ${vonFormatted}`;
+      } else if (bisFormatted) {
+        zeitraumText = `bis ${bisFormatted}`;
+      }
+
+      // Dritte Zeile: Freitext zur Maßnahme, Zeilenumbrüche als Absätze darstellen
+      const rawText = (props.t || '').trim();
+      let descHtml = '';
+      if (rawText) {
+        const paragraphs = rawText
+          .split(/\r?\n+/)
+          .map(p => p.trim())
+          .filter(p => p.length > 0);
+        descHtml = paragraphs.map(p => `<p class="baustelle-popup-p">${escapeHtml(p)}</p>`).join('');
+      }
+
+      const badgeClass = isSperrung ? 'baustelle-badge-sperrung' : 'baustelle-badge-bauabschnitt';
+      const badgeText = isSperrung ? 'Sperrung' : 'Bauabschnitt';
+
+      const popupHtml = `
+        <div class="baustelle-popup-header">
+          <span class="baustelle-popup-badge ${badgeClass}">${badgeText}</span>
+          <div class="baustelle-popup-title">${firstLine}</div>
+        </div>
+        ${zeitraumText ? `<div class="baustelle-popup-zeitraum">${escapeHtml(zeitraumText)}</div>` : ''}
+        ${descHtml ? `<div class="baustelle-popup-desc">${descHtml}</div>` : ''}
+      `;
+
+      if (baustellePopup) {
+        baustellePopup.remove();
+      }
+
+      baustellePopup = new maplibregl.Popup({
+        offset: 10,
+        closeButton: true,
+        closeOnClick: true,
+        className: 'baustelle-popup'
+      })
+        .setLngLat(e.lngLat)
+        .setHTML(popupHtml)
+        .addTo(map);
+    });
+  });
+}
+
+/**
+ * Registriert die Baustellen-Quelle und die beiden Linien-Ebenen in MapLibre
+ */
+function registerBaustellenSourceAndLayers() {
+  if (!map) return;
+
+  if (!map.getSource(BAUSTELLEN_SOURCE_ID)) {
+    map.addSource(BAUSTELLEN_SOURCE_ID, {
+      type: 'geojson',
+      data: baustellenData
+    });
+  }
+
+  const beforeLayerId = getBeforeRouteLayerId();
+
+  // Ebene 1: Sperrungen (sp = 1), kräftiges Rot, interpolierte Linienbreite (mind. 3px)
+  if (!map.getLayer(BAUSTELLEN_SPERRUNGEN_LAYER_ID)) {
+    map.addLayer({
+      id: BAUSTELLEN_SPERRUNGEN_LAYER_ID,
+      type: 'line',
+      source: BAUSTELLEN_SOURCE_ID,
+      filter: ['==', ['get', 'sp'], 1],
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#e63946',
+        'line-width': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8, 3,
+          15, 8
+        ],
+        'line-opacity': 0.95
+      }
+    }, beforeLayerId);
+  }
+
+  // Ebene 2: Bauabschnitte (sp = 0), gedämpftes Orange, etwas schmaler (mind. 3px)
+  if (!map.getLayer(BAUSTELLEN_BAUABSCHNITTE_LAYER_ID)) {
+    map.addLayer({
+      id: BAUSTELLEN_BAUABSCHNITTE_LAYER_ID,
+      type: 'line',
+      source: BAUSTELLEN_SOURCE_ID,
+      filter: ['==', ['get', 'sp'], 0],
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#f77f00',
+        'line-width': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8, 3,
+          15, 6
+        ],
+        'line-opacity': 0.95
+      }
+    }, beforeLayerId);
+  }
+
+  setupBaustellenInteractions();
+}
+
+/**
+ * Schaltet die Sichtbarkeit beider Baustellen-Ebenen um
+ */
+function setBaustellenLayersVisibility(visibility) {
+  if (!map) return;
+  [BAUSTELLEN_SPERRUNGEN_LAYER_ID, BAUSTELLEN_BAUABSCHNITTE_LAYER_ID].forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, 'visibility', visibility);
+    }
+  });
+}
+
+/**
+ * Aktualisiert das Erscheinungsbild des Baustellen-Schalters
+ */
+function updateBaustellenButtonUI(isActive, isLoading) {
+  const btn = domElements.btnToggleBaustellen || document.getElementById('btn-toggle-baustellen');
+  if (!btn) return;
+
+  if (isLoading) {
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.setAttribute('title', 'Baustellen werden geladen...');
+    btn.setAttribute('aria-label', 'Baustellen werden geladen...');
+  } else {
+    btn.classList.remove('is-loading');
+    btn.removeAttribute('aria-busy');
+  }
+
+  if (isActive) {
+    btn.classList.add('is-active');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.setAttribute('title', 'Baustellen ausblenden');
+    btn.setAttribute('aria-label', 'Baustellen ausblenden');
+  } else {
+    btn.classList.remove('is-active');
+    btn.setAttribute('aria-pressed', 'false');
+    btn.setAttribute('title', 'Baustellen und Sperrungen anzeigen');
+    btn.setAttribute('aria-label', 'Baustellen und Sperrungen anzeigen');
+  }
+}
+
+/**
+ * Schaltet die Baustellen-Ebene ein oder aus
+ */
+async function toggleBaustellen() {
+  if (isBaustellenLoading) return;
+
+  if (isBaustellenActive) {
+    // Ausschalten blendet die Ebenen aus, ohne die geladenen Daten zu verwerfen
+    setBaustellenLayersVisibility('none');
+    isBaustellenActive = false;
+    updateBaustellenButtonUI(false, false);
+    if (baustellePopup) {
+      baustellePopup.remove();
+      baustellePopup = null;
+    }
+  } else {
+    // Einschalten: Pruefen, ob die Karte bereit ist
+    if (!map || !map.isStyleLoaded()) {
+      if (map) {
+        map.once('load', () => toggleBaustellen());
+      }
+      return;
+    }
+
+    if (!baustellenData) {
+      // Beim ersten Einschalten wird data/baustellen.geojson per fetch geladen
+      isBaustellenLoading = true;
+      updateBaustellenButtonUI(false, true);
+
+      try {
+        const response = await fetch(BAUSTELLEN_GEOJSON_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} beim Laden von ${BAUSTELLEN_GEOJSON_URL}`);
+        }
+        baustellenData = await response.json();
+
+        // Als MapLibre-Quelle und zwei Ebenen registrieren
+        registerBaustellenSourceAndLayers();
+        setBaustellenLayersVisibility('visible');
+        isBaustellenActive = true;
+        updateBaustellenButtonUI(true, false);
+      } catch (err) {
+        console.error('Fehler beim Laden von data/baustellen.geojson:', err);
+        isBaustellenActive = false;
+        updateBaustellenButtonUI(false, false);
+      } finally {
+        isBaustellenLoading = false;
+      }
+    } else {
+      // Bereits geladen: im Speicher behalten, Quelle registrieren falls noetig und sichtbar schalten
+      if (!map.getSource(BAUSTELLEN_SOURCE_ID)) {
+        registerBaustellenSourceAndLayers();
+      }
+      setBaustellenLayersVisibility('visible');
+      isBaustellenActive = true;
+      updateBaustellenButtonUI(true, false);
+    }
+  }
+}
+
+/**
+ * Initialisiert den Schalter fuer die Baustellen-Ebene
+ */
+function initBaustellenControl() {
+  let btn = domElements.btnToggleBaustellen || document.getElementById('btn-toggle-baustellen');
+  if (!btn) {
+    const mapArea = document.querySelector('.planer-map-area') || document.getElementById('map');
+    if (!mapArea) return;
+
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'btn-toggle-baustellen';
+    btn.className = 'map-ctrl-btn btn-toggle-baustellen';
+    btn.title = 'Baustellen und Sperrungen anzeigen';
+    btn.setAttribute('aria-label', 'Baustellen und Sperrungen anzeigen');
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = `
+      <span class="baustellen-btn-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </span>
+      <span class="baustellen-btn-spinner" aria-hidden="true"></span>
+    `;
+    mapArea.appendChild(btn);
+    domElements.btnToggleBaustellen = btn;
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleBaustellen();
   });
 }
 
