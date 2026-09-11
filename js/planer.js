@@ -29,6 +29,9 @@ const BAUSTELLEN_GEOJSON_URL = 'data/baustellen.geojson';
 const BAUSTELLEN_SOURCE_ID = 'baustellen-source';
 const BAUSTELLEN_SPERRUNGEN_LAYER_ID = 'baustellen-sperrungen';
 const BAUSTELLEN_BAUABSCHNITTE_LAYER_ID = 'baustellen-bauabschnitte';
+const BAUSTELLEN_SYMBOLS_LAYER_ID = 'baustellen-symbols';
+const BAUSTELLE_ICON_RED = 'baustelle-icon-red';
+const BAUSTELLE_ICON_YELLOW = 'baustelle-icon-yellow';
 
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
@@ -1777,6 +1780,8 @@ function setupRouteLayers() {
       'line-opacity': 1.0
     }
   });
+
+  bringBaustellenLayersToFront();
 }
 
 /**
@@ -2120,16 +2125,102 @@ function formatGermanDate(isoDateStr) {
 }
 
 /**
+ * Erzeugt ein Warndreieck (Kantenlänge ca. 22 Pixel) als ImageData für map.addImage
+ * Dreieckige Fläche mit weißem Rand und einem weißem Ausrufezeichen in der Mitte
+ */
+function createWarningTriangleImageData(fillColor) {
+  const size = 26;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Dreieck definieren: Kantenlänge ca. 22 Pixel, zentriert im Canvas
+  // Höhe eines gleichseitigen Dreiecks (22px): ca. 19 Pixel
+  const topX = 13, topY = 3.5;
+  const leftX = 2.5, leftY = 22.5;
+  const rightX = 23.5, rightY = 22.5;
+
+  // Dreieckspfad
+  ctx.beginPath();
+  ctx.moveTo(topX, topY);
+  ctx.lineTo(rightX, rightY);
+  ctx.lineTo(leftX, leftY);
+  ctx.closePath();
+
+  // Dreieckige Fläche (#DC2626 bzw. #EAB308)
+  ctx.fillStyle = fillColor;
+  ctx.fill();
+
+  // Weißer Rand
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Weißes Ausrufezeichen in der Mitte
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(13, 9.5);
+  ctx.lineTo(13, 14.5);
+  ctx.stroke();
+
+  // Punkt des Ausrufezeichens
+  ctx.beginPath();
+  ctx.arc(13, 17.5, 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  return ctx.getImageData(0, 0, size, size);
+}
+
+/**
+ * Registriert die beiden Warndreieck-Symbole (rot und gelb) in MapLibre, falls noch nicht vorhanden
+ */
+function ensureBaustellenImages() {
+  if (!map) return;
+  if (!map.hasImage(BAUSTELLE_ICON_RED)) {
+    map.addImage(BAUSTELLE_ICON_RED, createWarningTriangleImageData('#DC2626'));
+  }
+  if (!map.hasImage(BAUSTELLE_ICON_YELLOW)) {
+    map.addImage(BAUSTELLE_ICON_YELLOW, createWarningTriangleImageData('#EAB308'));
+  }
+}
+
+/**
+ * Stellt sicher, dass die Baustellen- und Sperrungsebenen über den Routenebenen liegen
+ */
+function bringBaustellenLayersToFront() {
+  if (!map) return;
+  const layerIds = [
+    BAUSTELLEN_BAUABSCHNITTE_LAYER_ID,
+    BAUSTELLEN_SPERRUNGEN_LAYER_ID,
+    BAUSTELLEN_SYMBOLS_LAYER_ID
+  ];
+  layerIds.forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.moveLayer(layerId);
+    }
+  });
+}
+
+/**
  * Richtet Klick- und Hover-Interaktionen fuer die Baustellen- und Sperrungsebenen ein
  */
 function setupBaustellenInteractions() {
   if (baustellenInteractionsSetup || !map) return;
   baustellenInteractionsSetup = true;
 
-  const layerIds = [BAUSTELLEN_SPERRUNGEN_LAYER_ID, BAUSTELLEN_BAUABSCHNITTE_LAYER_ID];
+  const layerIds = [
+    BAUSTELLEN_SPERRUNGEN_LAYER_ID,
+    BAUSTELLEN_BAUABSCHNITTE_LAYER_ID,
+    BAUSTELLEN_SYMBOLS_LAYER_ID
+  ];
 
   layerIds.forEach((layerId) => {
-    // Cursor-Wechsel beim Überfahren der Linien
+    // Cursor-Wechsel beim Überfahren der Linien oder Symbole
     map.on('mouseenter', layerId, () => {
       map.getCanvas().style.cursor = 'pointer';
     });
@@ -2137,7 +2228,7 @@ function setupBaustellenInteractions() {
       map.getCanvas().style.cursor = '';
     });
 
-    // Klick auf eine Baustelle öffnet ein maplibregl.Popup an der Klickstelle
+    // Klick auf eine Baustelle oder ein Warnschild öffnet ein maplibregl.Popup an der Klickstelle
     map.on('click', layerId, (e) => {
       if (!e.features || !e.features.length) return;
       const feature = e.features[0];
@@ -2146,6 +2237,7 @@ function setupBaustellenInteractions() {
       const street = escapeHtml((props.s || '').trim());
       const location = escapeHtml((props.o || '').trim());
       const isSperrung = Number(props.sp) === 1;
+      const isStarted = Number(props.is_started) === 1;
 
       // Erste Zeile: Straßennummer und Ortsangabe
       let firstLine = '';
@@ -2156,15 +2248,27 @@ function setupBaustellenInteractions() {
       }
 
       // Zweite Zeile: Zeitraum im Format "07.09.2026 bis 11.09.2026"
+      // Ist die Baustelle noch nicht begonnen, wird der Zusatz "ab" vorangestellt
       const vonFormatted = formatGermanDate(props.von);
       const bisFormatted = formatGermanDate(props.bis);
       let zeitraumText = '';
-      if (vonFormatted && bisFormatted) {
-        zeitraumText = `${vonFormatted} bis ${bisFormatted}`;
-      } else if (vonFormatted) {
-        zeitraumText = `ab ${vonFormatted}`;
-      } else if (bisFormatted) {
-        zeitraumText = `bis ${bisFormatted}`;
+
+      if (!isStarted) {
+        if (vonFormatted && bisFormatted) {
+          zeitraumText = `ab ${vonFormatted} bis ${bisFormatted}`;
+        } else if (vonFormatted) {
+          zeitraumText = `ab ${vonFormatted}`;
+        } else if (bisFormatted) {
+          zeitraumText = `bis ${bisFormatted}`;
+        }
+      } else {
+        if (vonFormatted && bisFormatted) {
+          zeitraumText = `${vonFormatted} bis ${bisFormatted}`;
+        } else if (vonFormatted) {
+          zeitraumText = `ab ${vonFormatted}`;
+        } else if (bisFormatted) {
+          zeitraumText = `bis ${bisFormatted}`;
+        }
       }
 
       // Dritte Zeile: Freitext zur Maßnahme, Zeilenumbrüche als Absätze darstellen
@@ -2180,10 +2284,16 @@ function setupBaustellenInteractions() {
 
       const badgeClass = isSperrung ? 'baustelle-badge-sperrung' : 'baustelle-badge-bauabschnitt';
       const badgeText = isSperrung ? 'Sperrung' : 'Bauabschnitt';
+      const statusBadge = !isStarted
+        ? '<span class="baustelle-popup-badge baustelle-badge-geplant">Noch nicht begonnen</span>'
+        : '';
 
       const popupHtml = `
         <div class="baustelle-popup-header">
-          <span class="baustelle-popup-badge ${badgeClass}">${badgeText}</span>
+          <div class="baustelle-popup-badges">
+            <span class="baustelle-popup-badge ${badgeClass}">${badgeText}</span>
+            ${statusBadge}
+          </div>
           <div class="baustelle-popup-title">${firstLine}</div>
         </div>
         ${zeitraumText ? `<div class="baustelle-popup-zeitraum">${escapeHtml(zeitraumText)}</div>` : ''}
@@ -2208,7 +2318,8 @@ function setupBaustellenInteractions() {
 }
 
 /**
- * Registriert die Baustellen-Quelle und die beiden Linien-Ebenen in MapLibre
+ * Registriert die Baustellen-Quelle und die Linien- sowie Symbolebenen in MapLibre
+ * Liegt ausdrücklich über den Routenebenen
  */
 function registerBaustellenSourceAndLayers() {
   if (!map) return;
@@ -2220,34 +2331,9 @@ function registerBaustellenSourceAndLayers() {
     });
   }
 
-  const beforeLayerId = getBeforeRouteLayerId();
+  ensureBaustellenImages();
 
-  // Ebene 1: Sperrungen (sp = 1), kräftiges Rot, interpolierte Linienbreite (mind. 3px)
-  if (!map.getLayer(BAUSTELLEN_SPERRUNGEN_LAYER_ID)) {
-    map.addLayer({
-      id: BAUSTELLEN_SPERRUNGEN_LAYER_ID,
-      type: 'line',
-      source: BAUSTELLEN_SOURCE_ID,
-      filter: ['==', ['get', 'sp'], 1],
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#e63946',
-        'line-width': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          8, 3,
-          15, 8
-        ],
-        'line-opacity': 0.95
-      }
-    }, beforeLayerId);
-  }
-
-  // Ebene 2: Bauabschnitte (sp = 0), gedämpftes Orange, etwas schmaler (mind. 3px)
+  // Ebene 1: Bauabschnitte (sp = 0), gedämpftes Violett #A78BFA, gestrichelt [2, 2]
   if (!map.getLayer(BAUSTELLEN_BAUABSCHNITTE_LAYER_ID)) {
     map.addLayer({
       id: BAUSTELLEN_BAUABSCHNITTE_LAYER_ID,
@@ -2259,7 +2345,8 @@ function registerBaustellenSourceAndLayers() {
         'line-cap': 'round'
       },
       paint: {
-        'line-color': '#f77f00',
+        'line-color': '#A78BFA',
+        'line-dasharray': [2, 2],
         'line-width': [
           'interpolate',
           ['linear'],
@@ -2269,18 +2356,81 @@ function registerBaustellenSourceAndLayers() {
         ],
         'line-opacity': 0.95
       }
-    }, beforeLayerId);
+    });
   }
+
+  // Ebene 2: Sperrungen (sp = 1), kräftiges Violett #7C3AED, gestrichelt [2, 2]
+  if (!map.getLayer(BAUSTELLEN_SPERRUNGEN_LAYER_ID)) {
+    map.addLayer({
+      id: BAUSTELLEN_SPERRUNGEN_LAYER_ID,
+      type: 'line',
+      source: BAUSTELLEN_SOURCE_ID,
+      filter: ['==', ['get', 'sp'], 1],
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#7C3AED',
+        'line-dasharray': [2, 2],
+        'line-width': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8, 3,
+          15, 8
+        ],
+        'line-opacity': 0.95
+      }
+    });
+  }
+
+  // Ebene 3: Symbolebene als Warnschild (Rot für heute aktiv, Gelb für noch nicht begonnen)
+  // symbol-placement: point sorgt für genau ein Symbol pro Linie
+  if (!map.getLayer(BAUSTELLEN_SYMBOLS_LAYER_ID)) {
+    map.addLayer({
+      id: BAUSTELLEN_SYMBOLS_LAYER_ID,
+      type: 'symbol',
+      source: BAUSTELLEN_SOURCE_ID,
+      minzoom: 8,
+      layout: {
+        'symbol-placement': 'point',
+        'icon-image': [
+          'case',
+          ['==', ['get', 'is_started'], 1],
+          BAUSTELLE_ICON_RED,
+          BAUSTELLE_ICON_YELLOW
+        ],
+        'icon-allow-overlap': false,
+        'icon-ignore-placement': false,
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8, 0.65,
+          12, 0.85,
+          15, 1.0
+        ]
+      }
+    });
+  }
+
+  // Baustellenebenen ausdrücklich oberhalb von route-line anordnen
+  bringBaustellenLayersToFront();
 
   setupBaustellenInteractions();
 }
 
 /**
- * Schaltet die Sichtbarkeit beider Baustellen-Ebenen um
+ * Schaltet die Sichtbarkeit der Baustellen-Ebenen (Linien und Warnschilder) um
  */
 function setBaustellenLayersVisibility(visibility) {
   if (!map) return;
-  [BAUSTELLEN_SPERRUNGEN_LAYER_ID, BAUSTELLEN_BAUABSCHNITTE_LAYER_ID].forEach((layerId) => {
+  [
+    BAUSTELLEN_BAUABSCHNITTE_LAYER_ID,
+    BAUSTELLEN_SPERRUNGEN_LAYER_ID,
+    BAUSTELLEN_SYMBOLS_LAYER_ID
+  ].forEach((layerId) => {
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(layerId, 'visibility', visibility);
     }
@@ -2353,7 +2503,21 @@ async function toggleBaustellen() {
         }
         baustellenData = await response.json();
 
-        // Als MapLibre-Quelle und zwei Ebenen registrieren
+        // Einmaliger Datumsabgleich in JavaScript:
+        // Ist die Baustelle heute bereits aktiv (von <= heutiges Datum JJJJ-MM-TT)?
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        if (baustellenData && Array.isArray(baustellenData.features)) {
+          baustellenData.features.forEach((feature) => {
+            if (!feature.properties) feature.properties = {};
+            const von = (feature.properties.von || '').trim();
+            const isStarted = !von || von <= todayStr;
+            feature.properties.is_started = isStarted ? 1 : 0;
+          });
+        }
+
+        // Als MapLibre-Quelle und Ebenen registrieren
         registerBaustellenSourceAndLayers();
         setBaustellenLayersVisibility('visible');
         isBaustellenActive = true;
@@ -2366,10 +2530,11 @@ async function toggleBaustellen() {
         isBaustellenLoading = false;
       }
     } else {
-      // Bereits geladen: im Speicher behalten, Quelle registrieren falls noetig und sichtbar schalten
+      // Bereits geladen: im Speicher behalten, Quelle registrieren falls nötig und sichtbar schalten
       if (!map.getSource(BAUSTELLEN_SOURCE_ID)) {
         registerBaustellenSourceAndLayers();
       }
+      bringBaustellenLayersToFront();
       setBaustellenLayersVisibility('visible');
       isBaustellenActive = true;
       updateBaustellenButtonUI(true, false);
@@ -3211,6 +3376,7 @@ async function calculateRoute() {
       setupRouteLayers();
       map.getSource('route-source').setData(combinedGeoJSON);
     }
+    bringBaustellenLayersToFront();
 
     fitMapToRoute(routeFeature.geometry.coordinates);
     displayRouteSummary(state.currentRouteProperties);

@@ -2262,14 +2262,14 @@ p {
 
 /* Aktiver Zustand (Ebene eingeschaltet) */
 .btn-toggle-baustellen.is-active {
-  background-color: rgba(230, 57, 70, 0.18);
-  color: #ff6b6b;
-  border-color: #e63946;
-  box-shadow: 0 0 14px rgba(230, 57, 70, 0.3), 0 2px 8px rgba(0, 0, 0, 0.5);
+  background-color: rgba(124, 58, 237, 0.2);
+  color: #c4b5fd;
+  border-color: #7c3aed;
+  box-shadow: 0 0 14px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .btn-toggle-baustellen.is-active:hover {
-  background-color: rgba(230, 57, 70, 0.26);
+  background-color: rgba(124, 58, 237, 0.28);
   color: #ffffff;
 }
 
@@ -2284,7 +2284,7 @@ p {
 }
 
 .btn-toggle-baustellen.is-active .baustellen-btn-icon {
-  color: #ff6b6b;
+  color: #c4b5fd;
 }
 
 .btn-toggle-baustellen .baustellen-btn-spinner {
@@ -2292,7 +2292,7 @@ p {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #e63946;
+  border-top-color: #7c3aed;
   border-radius: 50%;
   animation: tankstellen-btn-spin 0.75s linear infinite;
   flex-shrink: 0;
@@ -2376,6 +2376,14 @@ p {
   margin-bottom: 4px;
 }
 
+.baustelle-popup-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
 .baustelle-popup-badge {
   display: inline-block;
   font-size: 10px;
@@ -2384,19 +2392,24 @@ p {
   letter-spacing: 0.04em;
   padding: 1px 6px;
   border-radius: 3px;
-  margin-bottom: 4px;
 }
 
 .baustelle-badge-sperrung {
-  background-color: rgba(230, 57, 70, 0.25);
-  color: #ff6b6b;
-  border: 1px solid rgba(230, 57, 70, 0.4);
+  background-color: rgba(124, 58, 237, 0.25);
+  color: #c4b5fd;
+  border: 1px solid rgba(124, 58, 237, 0.5);
 }
 
 .baustelle-badge-bauabschnitt {
-  background-color: rgba(247, 127, 0, 0.25);
-  color: #ffaa40;
-  border: 1px solid rgba(247, 127, 0, 0.4);
+  background-color: rgba(167, 139, 250, 0.2);
+  color: #ddd6fe;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+}
+
+.baustelle-badge-geplant {
+  background-color: rgba(234, 179, 8, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(234, 179, 8, 0.45);
 }
 
 .baustelle-popup-title {
