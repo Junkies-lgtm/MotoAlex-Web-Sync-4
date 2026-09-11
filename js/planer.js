@@ -948,11 +948,17 @@ function createWaypointObject(lng, lat) {
     container.classList.remove('marker-is-dragging');
   };
 
-  container.addEventListener('touchend', clearTouchState, { passive: true });
-  container.addEventListener('touchcancel', clearTouchState, { passive: true });
+  container.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+    clearTouchState();
+  });
+  container.addEventListener('touchcancel', clearTouchState);
 
   // Klick-Listener auf dem Marker: Teilstueck-Popup oeffnen oder schliessen
   container.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     if (wasDragged || isLongPressActive) {
       return;
     }

@@ -51,6 +51,41 @@ const MODE_LABELS = {
 };
 
 let mapInstance = null;
+let segmentStats = [];
+let routeMarkers = [];
+
+/**
+ * Bereinigt Zeichenketten fuer sichere HTML-Ausgabe
+ */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Formatiert Strecken- und Zeitwerte
+ * Beispiel: "48,2 km · 1:05 Std." bzw. "12,4 km · 25 Min."
+ */
+function formatRouteStats(lengthMeters, timeSeconds) {
+  const lengthKm = (lengthMeters / 1000).toFixed(1).replace('.', ',');
+  const totalMinutes = Math.round(timeSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  let timeString = '';
+  if (hours > 0) {
+    const padMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    timeString = `${hours}:${padMinutes} Std.`;
+  } else {
+    timeString = `${minutes} Min.`;
+  }
+
+  return `${lengthKm} km · ${timeString}`;
+}
 
 /**
  * Zeigt einen sichtbaren Fehlerhinweis im Route-Viewer an
@@ -329,6 +364,7 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
       waypoints.forEach(wp => bounds.extend([wp.lng, wp.lat]));
 
       // 2. Marker für jeden Wegpunkt setzen
+      routeMarkers = [];
       const total = waypoints.length;
       waypoints.forEach((wp, idx) => {
         const container = document.createElement('div');
@@ -343,16 +379,67 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
         } else if (idx === total - 1 && total > 1) {
           pin.classList.add('marker-end');
           pin.innerText = 'Ziel';
+          pin.setAttribute('title', 'Teilstück anzeigen');
         } else {
           pin.classList.add('marker-via');
           pin.innerText = String(idx);
+          pin.setAttribute('title', 'Teilstück anzeigen');
         }
 
         container.appendChild(pin);
 
-        new maplibregl.Marker({ element: container, anchor: 'bottom' })
+        const marker = new maplibregl.Marker({ element: container, anchor: 'bottom' })
           .setLngLat([wp.lng, wp.lat])
           .addTo(mapInstance);
+
+        const markerItem = {
+          marker,
+          index: idx,
+          lng: wp.lng,
+          lat: wp.lat,
+          popup: null
+        };
+        routeMarkers.push(markerItem);
+
+        // Klick auf Wegpunkt: Teilstück-Popup öffnen oder schließen
+        container.addEventListener('click', () => {
+          if (idx <= 0) return;
+
+          if (markerItem.popup) {
+            markerItem.popup.remove();
+            markerItem.popup = null;
+            return;
+          }
+
+          const segIndex = idx - 1;
+          if (!segmentStats || !segmentStats[segIndex]) {
+            return;
+          }
+
+          const stat = segmentStats[segIndex];
+          const segmentText = formatRouteStats(stat.distance, stat.time);
+          const cumulativeText = `gesamt ${formatRouteStats(stat.cumDistance, stat.cumTime)}`;
+
+          const popupHtml = `<div class="teilstueck-popup-segment">${escapeHtml(segmentText)}</div><div class="teilstueck-popup-cumulative">${escapeHtml(cumulativeText)}</div>`;
+
+          const popup = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            offset: 12,
+            className: 'teilstueck-popup'
+          })
+            .setLngLat([wp.lng, wp.lat])
+            .setHTML(popupHtml)
+            .addTo(mapInstance);
+
+          markerItem.popup = popup;
+
+          popup.on('close', () => {
+            if (markerItem.popup === popup) {
+              markerItem.popup = null;
+            }
+          });
+        });
       });
 
       mapInstance.fitBounds(bounds, { padding: 60, maxZoom: 14 });
@@ -401,83 +488,79 @@ async function fetchAndDrawRoute(waypoints, segmentModesOrMode) {
     segmentModes = Array(numSegments).fill('kurvig');
   }
 
-  const allSame = segmentModes.every(m => m === segmentModes[0]);
+  segmentStats = [];
   let geojson = null;
 
   try {
-    if (allSame) {
-      const selectedMode = segmentModes[0] || 'kurvig';
-      const modeParams = MODE_PARAMETERS[selectedMode] || MODE_PARAMETERS.kurvig;
+    // Segmentweise Berechnung je Wegpunktpaar
+    const segmentFeatures = [];
+    const newSegmentStats = [];
+    let totalLengthMeters = 0;
+    let totalTimeSeconds = 0;
 
-      const url = buildBRouterUrl(waypoints, PROFILE_ID, modeParams);
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const wpA = waypoints[i];
+      const wpB = waypoints[i + 1];
+      const segMode = segmentModes[i] || 'kurvig';
+      const modeParams = MODE_PARAMETERS[segMode] || MODE_PARAMETERS.kurvig;
+
+      const url = buildBRouterUrl([wpA, wpB], PROFILE_ID, modeParams);
       const res = await fetch(url);
       if (res.status === 403) {
         showRouteErrorNotice('Dieser Dienst ist derzeit nur aus Europa erreichbar.');
         return;
       }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.features && data.features.length > 0) {
-        geojson = data;
-      }
-    } else {
-      // Segmentweise Berechnung
-      const segmentFeatures = [];
-      let totalLengthMeters = 0;
-      let totalTimeSeconds = 0;
+      if (res.ok) {
+        const d = await res.json();
+        if (d.features && d.features.length > 0) {
+          const feat = d.features[0];
+          segmentFeatures.push(feat);
+          const props = feat.properties || {};
+          const segLengthMeters = parseFloat(props['track-length'] || 0);
+          const segTimeSeconds = parseFloat(props['total-time'] || 0);
 
-      for (let i = 0; i < waypoints.length - 1; i++) {
-        const wpA = waypoints[i];
-        const wpB = waypoints[i + 1];
-        const segMode = segmentModes[i] || 'kurvig';
-        const modeParams = MODE_PARAMETERS[segMode] || MODE_PARAMETERS.kurvig;
+          totalLengthMeters += segLengthMeters;
+          totalTimeSeconds += segTimeSeconds;
 
-        const url = buildBRouterUrl([wpA, wpB], PROFILE_ID, modeParams);
-        const res = await fetch(url);
-        if (res.status === 403) {
-          showRouteErrorNotice('Dieser Dienst ist derzeit nur aus Europa erreichbar.');
-          return;
-        }
-        if (res.ok) {
-          const d = await res.json();
-          if (d.features && d.features.length > 0) {
-            const feat = d.features[0];
-            segmentFeatures.push(feat);
-            const props = feat.properties || {};
-            totalLengthMeters += parseFloat(props['track-length'] || 0);
-            totalTimeSeconds += parseFloat(props['total-time'] || 0);
-          }
+          newSegmentStats.push({
+            distance: segLengthMeters,
+            time: segTimeSeconds,
+            cumDistance: totalLengthMeters,
+            cumTime: totalTimeSeconds
+          });
         }
       }
+    }
 
-      if (segmentFeatures.length > 0) {
-        const allCoords = [];
-        segmentFeatures.forEach((feat, idx) => {
-          const c = feat.geometry.coordinates;
-          if (idx === 0) {
-            allCoords.push(...c);
-          } else {
-            allCoords.push(...c.slice(1));
-          }
-        });
+    segmentStats = newSegmentStats;
 
-        geojson = {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'LineString',
-                coordinates: allCoords
-              },
-              properties: {
-                'track-length': String(totalLengthMeters),
-                'total-time': String(totalTimeSeconds)
-              }
+    if (segmentFeatures.length > 0) {
+      const allCoords = [];
+      segmentFeatures.forEach((feat, idx) => {
+        const c = feat.geometry.coordinates;
+        if (idx === 0) {
+          allCoords.push(...c);
+        } else {
+          allCoords.push(...c.slice(1));
+        }
+      });
+
+      geojson = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'LineString',
+              coordinates: allCoords
+            },
+            properties: {
+              'track-length': String(totalLengthMeters),
+              'total-time': String(totalTimeSeconds)
             }
-          ]
-        };
-      }
+          }
+        ]
+      };
     }
   } catch (err) {
     console.error('Fehler beim Routenabruf:', err);
