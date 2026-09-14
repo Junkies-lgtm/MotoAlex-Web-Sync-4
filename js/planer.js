@@ -967,7 +967,9 @@ function createWaypointObject(lng, lat) {
   };
 
   container.addEventListener('touchend', (e) => {
-    e.stopPropagation();
+    if (!wasDragged) {
+      e.stopPropagation();
+    }
     clearTouchState();
   });
   container.addEventListener('touchcancel', clearTouchState);
