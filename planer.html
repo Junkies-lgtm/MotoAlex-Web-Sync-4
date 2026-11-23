@@ -3,60 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- TEST: Fehleranzeige auf dem Bildschirm, nach der Fehlersuche wieder entfernen -->
-  <script>
-  (function(){
-    var box = null;
-    function show(t){
-      try {
-        if(!box){
-          box = document.createElement('div');
-          box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#300;color:#fff;font:12px monospace;padding:8px;max-height:45%;overflow:auto;white-space:pre-wrap';
-          (document.body || document.documentElement).appendChild(box);
-        }
-        box.textContent += t + '\n';
-      } catch(x){}
-    }
-    window.addEventListener('error', function(e){
-      show('FEHLER: ' + e.message + ' @ ' + e.filename + ':' + e.lineno);
-    }, true);
-    window.addEventListener('unhandledrejection', function(e){
-      show('PROMISE: ' + e.reason);
-    });
-    var oe = console.error;
-    console.error = function(){ show('CONSOLE: ' + Array.prototype.join.call(arguments,' ')); oe.apply(console, arguments); };
-    var ow = console.warn;
-    console.warn = function(){ show('WARN: ' + Array.prototype.join.call(arguments,' ')); ow.apply(console, arguments); };
-    window.addEventListener('load', function(){
-      setTimeout(function(){
-        show('INFO: maplibregl ' + (window.maplibregl ? (maplibregl.getVersion ? maplibregl.getVersion() : 'geladen') : 'FEHLT'));
-        try {
-          var c = document.createElement('canvas');
-          var gl = c.getContext('webgl2');
-          show('INFO: WebGL ' + (gl ? '2' : (c.getContext('webgl') ? '1' : 'NICHT VERFUEGBAR')));
-        } catch(x){ show('INFO: WebGL Fehler ' + x); }
-      }, 1500);
-    });
-  })();
-  </script>
-
   <title>Motorrad Routenplaner online – Kurvige Strecken planen &amp; GPX Export | MotoAlex</title>
   <meta name="description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren interaktiv planen, Kurven- und Höhenprofil prüfen und direkt als GPX-Datei exportieren.">
   <meta name="keywords" content="Motorrad Routenplaner, Motorrad Tour planen, kurvige Motorradstrecken, GPX Export, Kurvenrouting online, MotoAlex Planer">
   <meta name="author" content="MotoAlex Navigation">
   <meta name="robots" content="index, follow">
 
+  <!-- Kanonische URL -->
   <link rel="canonical" href="https://motoalex-navigation.de/planer.html">
 
+  <!-- Font-Preloading für schnelle Typografie & LCP -->
   <link rel="preload" href="fonts/SpaceGrotesk-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/SpaceGrotesk-Bold.woff2" as="font" type="font/woff2" crossorigin>
 
+  <!-- Performance Preconnects für Karten-Bibliothek und Kacheln -->
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="dns-prefetch" href="https://unpkg.com">
-  <link rel="preconnect" href="https://tiles.motoalex-navigation.de" crossorigin>
-  <link rel="dns-prefetch" href="https://tiles.motoalex-navigation.de">
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
 
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
   <meta property="og:title" content="Motorrad Routenplaner online – Kurvige Strecken &amp; GPX Export | MotoAlex">
   <meta property="og:description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren planen, Höhenprofil prüfen und als GPX exportieren.">
   <meta property="og:type" content="website">
@@ -70,15 +36,18 @@
   <meta property="og:locale" content="de_DE">
   <meta property="og:site_name" content="MotoAlex Navigation">
 
+  <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Motorrad Routenplaner online – Kurvige Strecken &amp; GPX Export | MotoAlex">
   <meta name="twitter:description" content="Kostenloser Online-Motorrad-Routenplaner: Kurvenoptimierte Touren planen, Höhenprofil prüfen und als GPX exportieren.">
   <meta name="twitter:image" content="https://motoalex-navigation.de/bilder/og-banner.png">
 
+  <!-- Favicon & App-Icons -->
   <link rel="icon" type="image/svg+xml" href="bilder/app-icon.svg">
   <link rel="alternate icon" href="bilder/app-icon.png">
   <link rel="apple-touch-icon" href="bilder/app-icon.png">
 
+  <!-- Strukturierte Daten (Schema.org / JSON-LD) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -88,7 +57,7 @@
     "applicationCategory": "NavigationApplication",
     "applicationSubCategory": "Motorcycle Route Planner",
     "operatingSystem": "All modern browsers (Web)",
-    "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & WebGL2.",
+    "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & WebGL.",
     "description": "Kostenloser Online-Motorrad-Routenplaner mit kurvenoptimierter Streckenführung, Höhen- & Kurvenprofil und direktem GPX-Export.",
     "image": "https://motoalex-navigation.de/bilder/og-banner.png",
     "sameAs": [
@@ -107,10 +76,12 @@
     ]
   }
   </script>
+  
+  <!-- MapLibre GL JS aus dem CDN (HTTPS) -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
 
-  <!-- MapLibre GL JS 6: nur noch das Stylesheet hier, die Bibliothek wird unten als Modul geladen -->
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@^6.0.0/dist/maplibre-gl.css">
-
+  <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
   <link rel="stylesheet" href="css/style.css?v=1.13">
 </head>
 <body class="page-planer">
@@ -371,20 +342,8 @@
   <!-- Offline-Städte-, Pass- und Ortsdatenbank -->
   <script src="data/places.js"></script>
 
-  <!-- MapLibre GL JS 6 als Modul laden, danach den Planer starten -->
-  <script type="module">
-    try {
-      const maplibregl = await import('https://unpkg.com/maplibre-gl@^6.0.0/dist/maplibre-gl.mjs');
-      window.maplibregl = maplibregl;
-      console.warn('MapLibre geladen, starte Planer');
-      const s = document.createElement('script');
-      s.src = 'js/planer.js';
-      s.onerror = () => console.error('planer.js konnte nicht geladen werden');
-      document.body.appendChild(s);
-    } catch (e) {
-      console.error('MapLibre-Modul konnte nicht geladen werden: ' + e);
-    }
-  </script>
+  <!-- Planer JavaScript (Relative Pfadangabe) -->
+  <script src="js/planer.js"></script>
 
 </body>
 </html>
