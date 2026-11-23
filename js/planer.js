@@ -320,8 +320,7 @@ function initMap() {
       zoom: 6,
       minZoom: MAP_MIN_ZOOM,
       maxBounds: MAP_MAX_BOUNDS,
-      attributionControl: true,
-      antialias: true
+      attributionControl: true
     });
 
     // Navigations-Bedienelemente (Zoom / Kompass) hinzufuegen
