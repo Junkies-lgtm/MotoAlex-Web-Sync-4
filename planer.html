@@ -29,12 +29,14 @@
     var ow = console.warn;
     console.warn = function(){ show('WARN: ' + Array.prototype.join.call(arguments,' ')); ow.apply(console, arguments); };
     window.addEventListener('load', function(){
-      show('INFO: maplibregl ' + (window.maplibregl ? maplibregl.getVersion ? maplibregl.getVersion() : 'geladen' : 'FEHLT'));
-      try {
-        var c = document.createElement('canvas');
-        var gl = c.getContext('webgl2') || c.getContext('webgl');
-        show('INFO: WebGL ' + (gl ? (c.getContext('webgl2') ? '2' : '1') : 'NICHT VERFUEGBAR'));
-      } catch(x){ show('INFO: WebGL Fehler ' + x); }
+      setTimeout(function(){
+        show('INFO: maplibregl ' + (window.maplibregl ? (maplibregl.getVersion ? maplibregl.getVersion() : 'geladen') : 'FEHLT'));
+        try {
+          var c = document.createElement('canvas');
+          var gl = c.getContext('webgl2');
+          show('INFO: WebGL ' + (gl ? '2' : (c.getContext('webgl') ? '1' : 'NICHT VERFUEGBAR')));
+        } catch(x){ show('INFO: WebGL Fehler ' + x); }
+      }, 1500);
     });
   })();
   </script>
@@ -86,7 +88,7 @@
     "applicationCategory": "NavigationApplication",
     "applicationSubCategory": "Motorcycle Route Planner",
     "operatingSystem": "All modern browsers (Web)",
-    "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & WebGL.",
+    "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & WebGL2.",
     "description": "Kostenloser Online-Motorrad-Routenplaner mit kurvenoptimierter Streckenführung, Höhen- & Kurvenprofil und direktem GPX-Export.",
     "image": "https://motoalex-navigation.de/bilder/og-banner.png",
     "sameAs": [
@@ -106,9 +108,8 @@
   }
   </script>
 
-  <!-- MapLibre GL JS aus dem CDN (HTTPS) -->
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+  <!-- MapLibre GL JS 6: nur noch das Stylesheet hier, die Bibliothek wird unten als Modul geladen -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@^6.0.0/dist/maplibre-gl.css">
 
   <link rel="stylesheet" href="css/style.css?v=1.13">
 </head>
@@ -370,8 +371,20 @@
   <!-- Offline-Städte-, Pass- und Ortsdatenbank -->
   <script src="data/places.js"></script>
 
-  <!-- Planer JavaScript (Relative Pfadangabe) -->
-  <script src="js/planer.js"></script>
+  <!-- MapLibre GL JS 6 als Modul laden, danach den Planer starten -->
+  <script type="module">
+    try {
+      const maplibregl = await import('https://unpkg.com/maplibre-gl@^6.0.0/dist/maplibre-gl.mjs');
+      window.maplibregl = maplibregl;
+      console.warn('MapLibre geladen, starte Planer');
+      const s = document.createElement('script');
+      s.src = 'js/planer.js';
+      s.onerror = () => console.error('planer.js konnte nicht geladen werden');
+      document.body.appendChild(s);
+    } catch (e) {
+      console.error('MapLibre-Modul konnte nicht geladen werden: ' + e);
+    }
+  </script>
 
 </body>
 </html>
